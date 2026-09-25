@@ -16,6 +16,7 @@
             <MenuItem Header="Animasi" x:Name="MenuAnimations"/>
             <MenuItem Header="Arah Pandang" x:Name="MenuGaze"/>
             <MenuItem Header="Ukuran Pet" x:Name="MenuScale"/>
+            <MenuItem Header="Opsi Perilaku" x:Name="MenuBehavior"/>
             <Separator/>
             <MenuItem Header="Panel Kontrol &amp; Tester..." Click="MenuOpenControl_Click"/>
             <MenuItem Header="Reset Posisi" Click="MenuResetPos_Click"/>

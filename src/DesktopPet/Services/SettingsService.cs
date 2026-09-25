@@ -9,6 +9,10 @@ public class PetSettings
     public double X { get; set; } = -1;
     public double Y { get; set; } = -1;
     public double Scale { get; set; } = 1.0;
+    public bool ReducedMotion { get; set; } = false;
+    public bool AutoWander { get; set; } = true;
+    public bool GazeTracking { get; set; } = true;
+    public bool TypingDetection { get; set; } = true;
 }
 
 public class SettingsService

@@ -12,18 +12,13 @@ namespace DesktopPet;
 
 public partial class MainWindow : Window
 {
-    private const int GWL_EXSTYLE = -20;
-    private const int WS_EX_TOOLWINDOW = 0x00000080;
-
-    [DllImport("user32.dll")]
-    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-    [DllImport("user32.dll")]
-    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
     private readonly SpriteSheetManager _sheetManager;
     private readonly SpritePlayer _player;
     private readonly SettingsService _settingsService;
+    private readonly PetStateMachine _stateMachine;
+    private readonly ActivityDetector _activityDetector;
+    private readonly GazeTracker _gazeTracker;
+    private PetMovementManager? _movementManager;
     private ControlWindow? _controlWindow;
     private TrayIconManager? _trayManager;
 
@@ -43,6 +38,10 @@ public partial class MainWindow : Window
         _player = new SpritePlayer(_sheetManager);
         _player.FrameUpdated += OnFrameUpdated;
 
+        _stateMachine = new PetStateMachine(_player);
+        _activityDetector = new ActivityDetector();
+        _gazeTracker = new GazeTracker();
+
         BuildContextMenu();
     }
 
@@ -50,8 +49,8 @@ public partial class MainWindow : Window
     {
         // Apply Win32 tool window styles (hide from Alt-Tab)
         var helper = new WindowInteropHelper(this);
-        int exStyle = GetWindowLong(helper.Handle, GWL_EXSTYLE);
-        SetWindowLong(helper.Handle, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
+        int exStyle = NativeMethods.GetWindowLong(helper.Handle, NativeMethods.GWL_EXSTYLE);
+        NativeMethods.SetWindowLong(helper.Handle, NativeMethods.GWL_EXSTYLE, exStyle | NativeMethods.WS_EX_TOOLWINDOW);
 
         // Apply scale & position
         SetScale(_settingsService.Settings.Scale);
@@ -59,12 +58,28 @@ public partial class MainWindow : Window
         Left = pos.X;
         Top = pos.Y;
 
+        // Initialize Movement Manager
+        _movementManager = new PetMovementManager(this, _stateMachine)
+        {
+            IsEnabled = _settingsService.Settings.AutoWander,
+            ReducedMotion = _settingsService.Settings.ReducedMotion
+        };
+
+        // Wire Activity Detector (Typing & Cursor tracking)
+        _activityDetector.IsEnabled = _settingsService.Settings.TypingDetection;
+        _activityDetector.TypingStarted += OnTypingStarted;
+        _activityDetector.TypingStopped += OnTypingStopped;
+        _activityDetector.CursorMoved += OnCursorMoved;
+        _activityDetector.Start();
+
         // Initialize ControlWindow and TrayManager
-        _controlWindow = new ControlWindow(this, _player);
+        _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector);
         _trayManager = new TrayIconManager(this, _controlWindow);
 
-        // Start default Idle animation
-        _player.PlayAnimation(PetAnimationState.Idle);
+        _movementManager.Start();
+
+        // Start default state evaluation
+        _stateMachine.EvaluateState();
     }
 
     private void OnFrameUpdated(System.Windows.Media.Imaging.BitmapSource frame)
@@ -72,6 +87,44 @@ public partial class MainWindow : Window
         Dispatcher.InvokeAsync(() =>
         {
             PetImage.Source = frame;
+        });
+    }
+
+    private void OnTypingStarted()
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            if (_settingsService.Settings.TypingDetection)
+            {
+                _movementManager?.CancelMovement();
+                _stateMachine.SetUserTyping(true);
+            }
+        });
+    }
+
+    private void OnTypingStopped()
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            _stateMachine.SetUserTyping(false);
+        });
+    }
+
+    private void OnCursorMoved(int cursorX, int cursorY)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            if (!_settingsService.Settings.GazeTracking) return;
+
+            // Only track gaze when idle or already in gaze state
+            if (_stateMachine.CurrentPriority <= PetPriority.Gaze)
+            {
+                double centerX = Left + Width / 2;
+                double centerY = Top + Height / 2;
+
+                var gaze = _gazeTracker.CalculateGaze(centerX, centerY, cursorX, cursorY);
+                _stateMachine.SetGaze(gaze);
+            }
         });
     }
 
@@ -90,8 +143,52 @@ public partial class MainWindow : Window
         _settingsService.Save();
     }
 
+    public void SetReducedMotion(bool val)
+    {
+        _settingsService.Settings.ReducedMotion = val;
+        if (_movementManager != null)
+        {
+            _movementManager.ReducedMotion = val;
+            if (val) _movementManager.CancelMovement();
+        }
+        _settingsService.Save();
+    }
+
+    public void SetAutoWander(bool val)
+    {
+        _settingsService.Settings.AutoWander = val;
+        if (_movementManager != null)
+        {
+            _movementManager.IsEnabled = val;
+            if (!val) _movementManager.CancelMovement();
+        }
+        _settingsService.Save();
+    }
+
+    public void SetGazeTracking(bool val)
+    {
+        _settingsService.Settings.GazeTracking = val;
+        if (!val)
+        {
+            _stateMachine.SetGaze(null);
+        }
+        _settingsService.Save();
+    }
+
+    public void SetTypingDetection(bool val)
+    {
+        _settingsService.Settings.TypingDetection = val;
+        _activityDetector.IsEnabled = val;
+        if (!val)
+        {
+            _stateMachine.SetUserTyping(false);
+        }
+        _settingsService.Save();
+    }
+
     public void ResetPosition()
     {
+        _movementManager?.CancelMovement();
         double defaultX = SystemParameters.WorkArea.Right - Width - 20;
         double defaultY = SystemParameters.WorkArea.Bottom - Height - 20;
         Left = defaultX;
@@ -106,7 +203,10 @@ public partial class MainWindow : Window
     {
         if (e.ChangedButton == MouseButton.Left)
         {
+            _movementManager?.CancelMovement();
             _isDragging = true;
+            _stateMachine.SetDirectInteraction(true);
+
             // Hold current pose during drag
             _player.Pause();
 
@@ -129,7 +229,7 @@ public partial class MainWindow : Window
             // Play jumping response after release (as designed in AGENTS.md)
             _player.PlayAnimation(PetAnimationState.Jumping, () =>
             {
-                _player.PlayAnimation(PetAnimationState.Idle);
+                _stateMachine.SetDirectInteraction(false);
             });
         }
     }
@@ -151,13 +251,42 @@ public partial class MainWindow : Window
             var targetState = state;
             item.Click += (s, e) =>
             {
-                if (targetState is PetAnimationState.Waving or PetAnimationState.Jumping)
+                _movementManager?.CancelMovement();
+                if (targetState is PetAnimationState.Waving)
                 {
-                    _player.PlayAnimation(targetState, () => _player.PlayAnimation(PetAnimationState.Idle));
+                    _stateMachine.TriggerNotification();
+                }
+                else if (targetState is PetAnimationState.Jumping)
+                {
+                    _stateMachine.TriggerJobSuccess();
+                }
+                else if (targetState is PetAnimationState.Failed)
+                {
+                    _stateMachine.SetError(true);
+                }
+                else if (targetState is PetAnimationState.Waiting)
+                {
+                    _stateMachine.SetNeedsAction(true);
+                }
+                else if (targetState is PetAnimationState.Running)
+                {
+                    _stateMachine.SetComputerWork(true);
+                }
+                else if (targetState is PetAnimationState.Review)
+                {
+                    _stateMachine.SetUserTyping(true);
+                }
+                else if (targetState is PetAnimationState.RunningRight)
+                {
+                    _movementManager?.MoveTo(Left + 100);
+                }
+                else if (targetState is PetAnimationState.RunningLeft)
+                {
+                    _movementManager?.MoveTo(Left - 100);
                 }
                 else
                 {
-                    _player.PlayAnimation(targetState);
+                    _stateMachine.ClearAllSimulations();
                 }
             };
             MenuAnimations.Items.Add(item);
@@ -170,7 +299,11 @@ public partial class MainWindow : Window
             string name = AnimationCatalog.GetGazeDisplayName(gaze);
             var item = new MenuItem { Header = $"{name} (Baris {row}, Kolom {col})" };
             var targetGaze = gaze;
-            item.Click += (s, e) => _player.ShowGaze(targetGaze);
+            item.Click += (s, e) =>
+            {
+                _movementManager?.CancelMovement();
+                _player.ShowGaze(targetGaze);
+            };
             MenuGaze.Items.Add(item);
         }
 
@@ -183,6 +316,45 @@ public partial class MainWindow : Window
             item.Click += (s, e) => SetScale(targetScale);
             MenuScale.Items.Add(item);
         }
+
+        // 4. Behavioral Toggles
+        var settings = _settingsService.Settings;
+
+        var itemReducedMotion = new MenuItem
+        {
+            Header = "Reduced Motion",
+            IsCheckable = true,
+            IsChecked = settings.ReducedMotion
+        };
+        itemReducedMotion.Click += (s, e) => SetReducedMotion(itemReducedMotion.IsChecked);
+        MenuBehavior.Items.Add(itemReducedMotion);
+
+        var itemAutoWander = new MenuItem
+        {
+            Header = "Auto Wander (Jalan Otomatis)",
+            IsCheckable = true,
+            IsChecked = settings.AutoWander
+        };
+        itemAutoWander.Click += (s, e) => SetAutoWander(itemAutoWander.IsChecked);
+        MenuBehavior.Items.Add(itemAutoWander);
+
+        var itemGaze = new MenuItem
+        {
+            Header = "Gaze Tracking (Ikuti Mouse)",
+            IsCheckable = true,
+            IsChecked = settings.GazeTracking
+        };
+        itemGaze.Click += (s, e) => SetGazeTracking(itemGaze.IsChecked);
+        MenuBehavior.Items.Add(itemGaze);
+
+        var itemTyping = new MenuItem
+        {
+            Header = "Deteksi Mengetik (Typing Review)",
+            IsCheckable = true,
+            IsChecked = settings.TypingDetection
+        };
+        itemTyping.Click += (s, e) => SetTypingDetection(itemTyping.IsChecked);
+        MenuBehavior.Items.Add(itemTyping);
     }
 
     private void MenuOpenControl_Click(object sender, RoutedEventArgs e)
@@ -206,6 +378,9 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
+        _activityDetector.Dispose();
+        _movementManager?.Dispose();
+
         _settingsService.Settings.X = Left;
         _settingsService.Settings.Y = Top;
         _settingsService.Save();
