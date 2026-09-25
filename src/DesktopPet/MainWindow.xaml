@@ -26,51 +26,97 @@
     </Window.ContextMenu>
 
     <Grid x:Name="RootGrid" Background="Transparent" Cursor="SizeAll">
-        <Image x:Name="PetImage"
-               Width="192" Height="208"
-               Stretch="Fill"
-               RenderOptions.BitmapScalingMode="NearestNeighbor"
-               MouseLeftButtonDown="PetImage_MouseLeftButtonDown"
-               MouseLeftButtonUp="PetImage_MouseLeftButtonUp"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <!-- High CPU Sweat Droplet Indicator (Efek Keringat) -->
-        <Canvas x:Name="SweatCanvas" Width="192" Height="208" IsHitTestVisible="False" Visibility="Collapsed">
-            <Path Canvas.Left="125" Canvas.Top="25"
-                  Data="M 8 0 C 8 0 0 12 0 18 C 0 22.4 3.6 26 8 26 C 12.4 26 16 22.4 16 18 C 16 12 8 0 8 0 Z"
-                  Fill="#89DCEB" Opacity="0.92" Stroke="#74C7EC" StrokeThickness="1">
-                <Path.RenderTransform>
-                    <RotateTransform Angle="25"/>
-                </Path.RenderTransform>
-            </Path>
-        </Canvas>
+        <!-- Speech / Notification Bubble (Row 0) -->
+        <Grid x:Name="BubbleGrid" Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,4" Visibility="Collapsed"
+              MouseEnter="BubbleGrid_MouseEnter" MouseLeave="BubbleGrid_MouseLeave">
+            <StackPanel HorizontalAlignment="Center">
+                <Border x:Name="BubbleBorder"
+                        Background="#E6181825"
+                        BorderBrush="#89B4FA"
+                        BorderThickness="1.5"
+                        CornerRadius="10"
+                        Padding="10,8"
+                        MaxWidth="240"
+                        Cursor="Arrow">
+                    <StackPanel>
+                        <!-- Bubble Header -->
+                        <Grid Margin="0,0,0,3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="TxtBubbleTitle" Text="Notifikasi" FontWeight="Bold" FontSize="11" Foreground="#89B4FA"/>
+                            <TextBlock Grid.Column="1" Text="✕" FontSize="10" Foreground="#6C7086" Cursor="Hand" Margin="6,0,0,0"
+                                       MouseLeftButtonDown="BtnCloseBubble_Click"/>
+                        </Grid>
+                        <!-- Bubble Body -->
+                        <TextBlock x:Name="TxtBubbleMessage" Text="Pesan notifikasi..." TextWrapping="Wrap" FontSize="11" Foreground="#CDD6F4" Margin="0,2,0,4"/>
+                        <!-- Action Button -->
+                        <Button x:Name="BtnBubbleAction" Content="Tindak Lanjuti" Visibility="Collapsed"
+                                Padding="8,3" FontSize="10" Background="#313244" Foreground="#89B4FA"
+                                BorderBrush="#45475A" BorderThickness="1" HorizontalAlignment="Right"
+                                Cursor="Hand" Click="BtnBubbleAction_Click"/>
+                    </StackPanel>
+                </Border>
+                <!-- Tail pointing to Pet -->
+                <Path x:Name="BubbleTail" Data="M 0 0 L 8 7 L 16 0 Z" Fill="#E6181825" Stroke="#89B4FA" StrokeThickness="1"
+                      HorizontalAlignment="Center" Margin="0,-1,0,0"/>
+            </StackPanel>
+        </Grid>
 
-        <!-- Resource High Load Badges Stack -->
-        <StackPanel x:Name="BadgeContainer"
-                    Orientation="Vertical"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Top"
-                    Margin="0,4,0,0"
-                    IsHitTestVisible="False">
-            <Border x:Name="CpuBadge"
-                    Background="#E6181825"
-                    BorderBrush="#F38BA8"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="6,2"
-                    Margin="0,1"
-                    Visibility="Collapsed">
-                <TextBlock x:Name="TxtCpuBadge" Text="🔥 CPU 85%" FontSize="10" FontWeight="Bold" Foreground="#F38BA8"/>
-            </Border>
-            <Border x:Name="RamBadge"
-                    Background="#E6181825"
-                    BorderBrush="#FAB387"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="6,2"
-                    Margin="0,1"
-                    Visibility="Collapsed">
-                <TextBlock x:Name="TxtRamBadge" Text="⚡ RAM 88%" FontSize="10" FontWeight="Bold" Foreground="#FAB387"/>
-            </Border>
-        </StackPanel>
+        <!-- Pet Body & Badges (Row 1) -->
+        <Grid Grid.Row="1">
+            <Image x:Name="PetImage"
+                   Width="192" Height="208"
+                   Stretch="Fill"
+                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                   MouseLeftButtonDown="PetImage_MouseLeftButtonDown"
+                   MouseLeftButtonUp="PetImage_MouseLeftButtonUp"/>
+
+            <!-- High CPU Sweat Droplet Indicator (Efek Keringat) -->
+            <Canvas x:Name="SweatCanvas" Width="192" Height="208" IsHitTestVisible="False" Visibility="Collapsed">
+                <Path Canvas.Left="125" Canvas.Top="25"
+                      Data="M 8 0 C 8 0 0 12 0 18 C 0 22.4 3.6 26 8 26 C 12.4 26 16 22.4 16 18 C 16 12 8 0 8 0 Z"
+                      Fill="#89DCEB" Opacity="0.92" Stroke="#74C7EC" StrokeThickness="1">
+                    <Path.RenderTransform>
+                        <RotateTransform Angle="25"/>
+                    </Path.RenderTransform>
+                </Path>
+            </Canvas>
+
+            <!-- Resource High Load Badges Stack -->
+            <StackPanel x:Name="BadgeContainer"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Margin="0,4,0,0"
+                        IsHitTestVisible="False">
+                <Border x:Name="CpuBadge"
+                        Background="#E6181825"
+                        BorderBrush="#F38BA8"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="6,2"
+                        Margin="0,1"
+                        Visibility="Collapsed">
+                    <TextBlock x:Name="TxtCpuBadge" Text="🔥 CPU 85%" FontSize="10" FontWeight="Bold" Foreground="#F38BA8"/>
+                </Border>
+                <Border x:Name="RamBadge"
+                        Background="#E6181825"
+                        BorderBrush="#FAB387"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="6,2"
+                        Margin="0,1"
+                        Visibility="Collapsed">
+                    <TextBlock x:Name="TxtRamBadge" Text="⚡ RAM 88%" FontSize="10" FontWeight="Bold" Foreground="#FAB387"/>
+                </Border>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

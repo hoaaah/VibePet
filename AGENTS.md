@@ -15,8 +15,15 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
   - *Skenario 1 (Idle + Monitoring 1s):* Working Set RAM 88.7 MB (Puncak 90.0 MB), CPU 0.69%, GC 0.
   - *Skenario 2 (Animasi Aktif Loop):* Working Set RAM 90.5 MB (Puncak 90.6 MB), CPU 0.32%, GC 0.
   - *Skenario 3 (Monitoring Agresif 250ms):* Working Set RAM 90.7 MB (Puncak 90.7 MB), CPU 0.37%, GC 0.
+- **Tahap 4 (Integrasi aplikasi & Balon Notifikasi) selesai dan terverifikasi:**
+  - *IPC Server Named Pipe (`\\.\pipe\DesktopPetIpc`):* Komunikasi duplex full-speed tanpa izin firewall untuk menerima payload terstruktur JSON (`event`, `title`, `message`, `actionLabel`, `actionCommand`, `timeoutSeconds`).
+  - *Event yang didukung:* `start` / `work_started`, `success` / `work_completed`, `error` / `work_failed`, `needs_action` / `waiting`, `notify` / `waving`, dan `clear`.
+  - *Balon Notifikasi Komik Interaktif (Speech Bubble):* Terletak mengambang presisi di atas pet dengan ekor penunjuk, skema warna dinamis sesuai jenis pesan (hijau sukses, merah error, persik aksi, biru info), tombol tindakan (menjalankan URL/perintah shell), dan tombol dismiss `✕`.
+  - *Watcher Proses Otomatis (`ProcessWatcherService`):* Memantau lifecycle proses target pengembang (`dotnet`, `node`, `pwsh`, `cargo`, `ffmpeg`, `code`), memicu animasi komputer bekerja saat proses mulai dan animasi sukses/error berdasarkan exit code (0 = success, != 0 = error).
+  - *Integrasi UI & Scripting CLI:* Panel Kontrol menyertakan kontrol IPC & penambahan/penghapusan proses watcher secara visual. Disediakan juga `send-event.bat` dan `scripts/send-event.ps1` untuk pemanggilan instan dari build scripts, CI/CD lokal, atau terminal.
+  - *37 Unit Tests* di `tests/DesktopPet.Tests` lulus 100%.
 - Aset berasal dari pet terpilih `Kawahime`.
-- Tahap berikutnya yang menunggu eksekusi: Tahap 4 (Integrasi aplikasi: Named pipes IPC, event proses dimulai/selesai/gagal/butuh respons, balon notifikasi).
+- Tahap berikutnya yang menunggu eksekusi: Tahap 5 (Distribusi dan penyempurnaan: multi-monitor, DPI, installer/paket distribusi, opsi auto-start Windows).
 
 ## Stack yang direncanakan
 
@@ -143,11 +150,13 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
 - Tambahkan indikator beban tinggi dengan ambang dan hysteresis yang dapat dikonfigurasi.
 - Ukur overhead aplikasi saat idle, animasi aktif, dan monitoring aktif.
 
-### 4. Integrasi aplikasi
+### 4. Integrasi aplikasi (Selesai)
 
-- Tentukan aplikasi/proses pertama yang perlu dipantau bersama user.
-- Tambahkan event dimulai, selesai, error, dan membutuhkan respons.
-- Tambahkan balon informasi serta tindakan yang relevan.
+- Implementasi server duplex Named Pipe (`\\.\pipe\DesktopPetIpc`) berbasis JSON tanpa firewall prompt.
+- Tambahkan watcher proses otomatis (`ProcessWatcherService`) untuk mendeteksi event proses mulai/selesai/gagal berdasarkan exit code.
+- Tambahkan balon dialog komik (Speech Bubble) di atas pet dengan tema warna dinamis, tombol tindakan shell, dan tombol close.
+- Integrasi ke Panel Kontrol (tab/grupbox IPC dan Process Watcher) serta penyediaan skrip CLI `send-event.bat` dan `scripts/send-event.ps1`.
+- Seluruh 37 unit tests lulus 100%.
 
 ### 5. Distribusi dan penyempurnaan
 

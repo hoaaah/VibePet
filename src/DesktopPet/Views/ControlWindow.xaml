@@ -148,6 +148,93 @@
                 </StackPanel>
             </GroupBox>
 
+            <!-- Integrasi Aplikasi & IPC Named Pipe (Tahap 4) -->
+            <GroupBox Header="Integrasi Aplikasi &amp; IPC Named Pipe (Tahap 4)">
+                <StackPanel>
+                    <TextBlock Text="Komunikasi antar-proses (IPC) Named Pipe untuk event build, test, error, dan notifikasi:" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,6" TextWrapping="Wrap"/>
+
+                    <!-- IPC Toggle & Status -->
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <CheckBox x:Name="ChkIpcEnabled" Content="Server Named Pipe (\\.\pipe\DesktopPetIpc)" Click="ChkIpcEnabled_Click" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtIpcStatus" Grid.Column="1" Text="Aktif" FontSize="11" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Event Type Selector -->
+                    <Grid Margin="0,4,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Tipe Event:" FontSize="11" Foreground="#A6ADC8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox x:Name="CmbEventType" Grid.Column="1" Background="#313244" Foreground="#11111B" BorderBrush="#45475A">
+                            <ComboBoxItem Content="start (Pekerjaan Dimulai - Running)" Tag="start"/>
+                            <ComboBoxItem Content="success (Pekerjaan Selesai - Jumping)" IsSelected="True" Tag="success"/>
+                            <ComboBoxItem Content="error (Proses Gagal - Failed)" Tag="error"/>
+                            <ComboBoxItem Content="needs_action (Butuh Tindakan - Waiting)" Tag="needs_action"/>
+                            <ComboBoxItem Content="notify (Notifikasi Info - Waving)" Tag="notify"/>
+                            <ComboBoxItem Content="clear (Bersihkan Balon &amp; Reset)" Tag="clear"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Title & Message TextBoxes -->
+                    <TextBlock Text="Judul Notifikasi:" FontSize="11" Foreground="#A6ADC8" Margin="0,4,0,1"/>
+                    <TextBox x:Name="TxtIpcTitle" Text="Build Berhasil" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
+
+                    <TextBlock Text="Pesan Notifikasi / Balon:" FontSize="11" Foreground="#A6ADC8" Margin="0,4,0,1"/>
+                    <TextBox x:Name="TxtIpcMessage" Text="Kompilasi proyek DesktopPet selesai dalam 1.2 detik." Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
+
+                    <Grid Margin="0,4,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,3,0">
+                            <TextBlock Text="Tombol Aksi (Opsional):" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,1"/>
+                            <TextBox x:Name="TxtIpcActionLabel" Text="Lihat Hasil" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="3,0,0,0">
+                            <TextBlock Text="Durasi Balon (detik, 0=tetap):" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,1"/>
+                            <TextBox x:Name="TxtIpcTimeout" Text="5" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Button x:Name="BtnSendIpcEvent" Content="🚀 Kirim Event IPC (Simulasi Client Pipe)" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold" Margin="0,6,0,2" Click="BtnSendIpcEvent_Click"/>
+                    <TextBlock x:Name="TxtIpcResult" Text="" FontSize="11" Foreground="#A6E3A1" Margin="0,2,0,6" TextWrapping="Wrap"/>
+
+                    <!-- Process Watcher Section -->
+                    <Border BorderBrush="#45475A" BorderThickness="0,1,0,0" Margin="0,4,0,4" Padding="0,6,0,0">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <CheckBox x:Name="ChkProcessWatcher" Content="Pantau Proses Otomatis (Process Watcher)" Click="ChkProcessWatcher_Click" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtWatcherStatus" Grid.Column="1" Text="Aktif" FontSize="11" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="Daftar proses target yang dipantau (start &amp; exit code):" FontSize="11" Foreground="#A6ADC8" Margin="0,2,0,4"/>
+                            
+                            <ListBox x:Name="LstWatchedProcesses" Height="75" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A"/>
+
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="TxtNewProcessName" Text="cargo" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Content="Tambah" Width="70" Click="BtnAddProcess_Click" Margin="4,0,2,0"/>
+                                <Button Grid.Column="2" Content="Hapus" Width="70" Click="BtnRemoveProcess_Click" Margin="2,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </GroupBox>
+
             <!-- 9 Main Animations Manual Tester -->
             <GroupBox Header="9 Animasi Utama (Manual Test — Terkunci dari Gaze)">
                 <StackPanel>

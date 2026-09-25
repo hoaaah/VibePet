@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using DesktopPet.Models;
 using DesktopPet.Services;
 using DesktopPet.Views;
@@ -19,6 +20,11 @@ public partial class MainWindow : Window
     private readonly ActivityDetector _activityDetector;
     private readonly GazeTracker _gazeTracker;
     private readonly ResourceMonitor _resourceMonitor;
+    private readonly NamedPipeIpcServer _ipcServer;
+    private readonly ProcessWatcherService _processWatcher;
+    private readonly DispatcherTimer _bubbleDismissTimer;
+    private string? _currentBubbleActionCommand;
+
     private PetMovementManager? _movementManager;
     private ControlWindow? _controlWindow;
     private TrayIconManager? _trayManager;
@@ -43,6 +49,11 @@ public partial class MainWindow : Window
         _activityDetector = new ActivityDetector();
         _gazeTracker = new GazeTracker();
         _resourceMonitor = new ResourceMonitor(1000);
+        _ipcServer = new NamedPipeIpcServer();
+        _processWatcher = new ProcessWatcherService(_settingsService.Settings.WatchedProcesses);
+
+        _bubbleDismissTimer = new DispatcherTimer(DispatcherPriority.Background);
+        _bubbleDismissTimer.Tick += (s, e) => HideSpeechBubble();
 
         BuildContextMenu();
     }
@@ -83,8 +94,21 @@ public partial class MainWindow : Window
         _resourceMonitor.MetricsUpdated += OnResourceMetricsUpdated;
         _resourceMonitor.Start();
 
+        // Wire IPC Named Pipe Server
+        _ipcServer.MessageReceived += OnIpcMessageReceived;
+        if (_settingsService.Settings.EnableIpc)
+        {
+            _ipcServer.Start();
+        }
+
+        // Wire Process Watcher
+        _processWatcher.IsEnabled = _settingsService.Settings.EnableProcessWatcher;
+        _processWatcher.ProcessStarted += OnWatchedProcessStarted;
+        _processWatcher.ProcessExited += OnWatchedProcessExited;
+        _processWatcher.Start();
+
         // Initialize ControlWindow and TrayManager
-        _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector, _resourceMonitor);
+        _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector, _resourceMonitor, _ipcServer, _processWatcher);
         _trayManager = new TrayIconManager(this, _controlWindow);
 
         _movementManager.Start();
@@ -179,6 +203,223 @@ public partial class MainWindow : Window
         });
     }
 
+    private void OnIpcMessageReceived(PetEventMessage msg)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            string evt = msg.Event.ToLowerInvariant().Trim();
+            switch (evt)
+            {
+                case "start":
+                case "work_started":
+                    _stateMachine.SetComputerWork(true);
+                    ShowSpeechBubble(
+                        msg.Title ?? "Pekerjaan Dimulai",
+                        msg.Message ?? "Proses sedang berjalan...",
+                        msg.ActionLabel,
+                        msg.ActionCommand,
+                        msg.TimeoutSeconds ?? 5,
+                        "work"
+                    );
+                    break;
+
+                case "success":
+                case "work_completed":
+                    _stateMachine.TriggerJobSuccess();
+                    ShowSpeechBubble(
+                        msg.Title ?? "Pekerjaan Selesai",
+                        msg.Message ?? "Tugas berhasil diselesaikan dengan sukses!",
+                        msg.ActionLabel,
+                        msg.ActionCommand,
+                        msg.TimeoutSeconds ?? 6,
+                        "success"
+                    );
+                    break;
+
+                case "error":
+                case "work_failed":
+                    _stateMachine.SetError(true);
+                    ShowSpeechBubble(
+                        msg.Title ?? "Terjadi Error",
+                        msg.Message ?? "Tugas atau proses mengalami kegagalan.",
+                        msg.ActionLabel ?? "Tutup Error",
+                        msg.ActionCommand,
+                        msg.TimeoutSeconds ?? 10,
+                        "error"
+                    );
+                    break;
+
+                case "needs_action":
+                case "waiting":
+                case "prompt":
+                    _stateMachine.SetNeedsAction(true);
+                    ShowSpeechBubble(
+                        msg.Title ?? "Butuh Tindakan",
+                        msg.Message ?? "Menunggu respons atau persetujuan Anda.",
+                        msg.ActionLabel ?? "Tindak Lanjuti",
+                        msg.ActionCommand,
+                        msg.TimeoutSeconds ?? 0, // 0 = persistent
+                        "action"
+                    );
+                    break;
+
+                case "notify":
+                case "waving":
+                    _stateMachine.TriggerNotification();
+                    ShowSpeechBubble(
+                        msg.Title ?? "Notifikasi",
+                        msg.Message ?? "Ada informasi baru untuk Anda.",
+                        msg.ActionLabel,
+                        msg.ActionCommand,
+                        msg.TimeoutSeconds ?? 5,
+                        "notify"
+                    );
+                    break;
+
+                case "clear":
+                    _stateMachine.ClearAllSimulations();
+                    HideSpeechBubble();
+                    break;
+            }
+        });
+    }
+
+    private void OnWatchedProcessStarted(string processName, int pid)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            _stateMachine.SetComputerWork(true);
+            ShowSpeechBubble(
+                "Proses Dimulai",
+                $"Proses '{processName}' (PID: {pid}) terdeteksi sedang berjalan.",
+                timeoutSeconds: 4,
+                type: "work"
+            );
+        });
+    }
+
+    private void OnWatchedProcessExited(string processName, int pid, int exitCode)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            if (exitCode == 0)
+            {
+                _stateMachine.TriggerJobSuccess();
+                ShowSpeechBubble(
+                    "Proses Selesai",
+                    $"Proses '{processName}' selesai dengan sukses (exit code: 0)!",
+                    timeoutSeconds: 5,
+                    type: "success"
+                );
+            }
+            else
+            {
+                _stateMachine.SetError(true);
+                ShowSpeechBubble(
+                    "Proses Gagal",
+                    $"Proses '{processName}' keluar dengan error (exit code: {exitCode}).",
+                    actionLabel: "Tutup",
+                    timeoutSeconds: 8,
+                    type: "error"
+                );
+            }
+        });
+    }
+
+    public void ShowSpeechBubble(
+        string title,
+        string message,
+        string? actionLabel = null,
+        string? actionCommand = null,
+        int timeoutSeconds = 6,
+        string type = "notify")
+    {
+        _bubbleDismissTimer.Stop();
+
+        TxtBubbleTitle.Text = title;
+        TxtBubbleMessage.Text = message;
+        _currentBubbleActionCommand = actionCommand;
+
+        // Apply type-specific colors
+        var accentBrush = type switch
+        {
+            "error" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF3, 0x8B, 0xA8)), // red
+            "action" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFA, 0xB3, 0x87)), // peach
+            "success" => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xA6, 0xE3, 0xA1)), // green
+            _ => new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x89, 0xB4, 0xFA)) // blue
+        };
+
+        BubbleBorder.BorderBrush = accentBrush;
+        BubbleTail.Stroke = accentBrush;
+        TxtBubbleTitle.Foreground = accentBrush;
+
+        if (!string.IsNullOrWhiteSpace(actionLabel))
+        {
+            BtnBubbleAction.Content = actionLabel;
+            BtnBubbleAction.Foreground = accentBrush;
+            BtnBubbleAction.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            BtnBubbleAction.Visibility = Visibility.Collapsed;
+        }
+
+        BubbleGrid.Visibility = Visibility.Visible;
+
+        if (timeoutSeconds > 0)
+        {
+            _bubbleDismissTimer.Interval = TimeSpan.FromSeconds(timeoutSeconds);
+            _bubbleDismissTimer.Start();
+        }
+    }
+
+    public void HideSpeechBubble()
+    {
+        _bubbleDismissTimer.Stop();
+        BubbleGrid.Visibility = Visibility.Collapsed;
+    }
+
+    private void BubbleGrid_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        _bubbleDismissTimer.Stop();
+    }
+
+    private void BubbleGrid_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        _bubbleDismissTimer.Interval = TimeSpan.FromSeconds(3);
+        _bubbleDismissTimer.Start();
+    }
+
+    private void BtnCloseBubble_Click(object sender, MouseButtonEventArgs e)
+    {
+        HideSpeechBubble();
+        if (_stateMachine.HasError) _stateMachine.SetError(false);
+        if (_stateMachine.HasNeedsAction) _stateMachine.SetNeedsAction(false);
+    }
+
+    private void BtnBubbleAction_Click(object sender, RoutedEventArgs e)
+    {
+        HideSpeechBubble();
+        if (_stateMachine.HasError) _stateMachine.SetError(false);
+        if (_stateMachine.HasNeedsAction) _stateMachine.SetNeedsAction(false);
+
+        if (!string.IsNullOrWhiteSpace(_currentBubbleActionCommand))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = _currentBubbleActionCommand,
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                // Ignore shell execute errors
+            }
+        }
+    }
+
     public void SetScale(double scale)
     {
         _currentScale = Math.Clamp(scale, 0.5, 3.0);
@@ -189,8 +430,9 @@ public partial class MainWindow : Window
         PetImage.Height = h;
         SweatCanvas.Width = w;
         SweatCanvas.Height = h;
-        Width = w;
-        Height = h;
+        Width = double.NaN;
+        Height = double.NaN;
+        SizeToContent = SizeToContent.WidthAndHeight;
 
         _settingsService.Settings.Scale = _currentScale;
         _settingsService.Save();
@@ -434,6 +676,8 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
+        _ipcServer.Dispose();
+        _processWatcher.Dispose();
         _resourceMonitor.Dispose();
         _activityDetector.Dispose();
         _movementManager?.Dispose();

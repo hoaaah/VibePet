@@ -1,7 +1,13 @@
 using System.ComponentModel;
+using System.IO;
+using System.IO.Pipes;
+using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using DesktopPet.Models;
 using DesktopPet.Services;
+using MediaBrushes = System.Windows.Media.Brushes;
 
 namespace DesktopPet.Views;
 
@@ -13,6 +19,8 @@ public partial class ControlWindow : Window
     private readonly PetMovementManager _movementManager;
     private readonly ActivityDetector _activityDetector;
     private readonly ResourceMonitor _resourceMonitor;
+    private readonly NamedPipeIpcServer _ipcServer;
+    private readonly ProcessWatcherService _processWatcher;
     private bool _isPaused = false;
 
     public ControlWindow(
@@ -21,7 +29,9 @@ public partial class ControlWindow : Window
         PetStateMachine stateMachine,
         PetMovementManager movementManager,
         ActivityDetector activityDetector,
-        ResourceMonitor resourceMonitor)
+        ResourceMonitor resourceMonitor,
+        NamedPipeIpcServer ipcServer,
+        ProcessWatcherService processWatcher)
     {
         InitializeComponent();
         _mainWindow = mainWindow;
@@ -30,6 +40,8 @@ public partial class ControlWindow : Window
         _movementManager = movementManager;
         _activityDetector = activityDetector;
         _resourceMonitor = resourceMonitor;
+        _ipcServer = ipcServer;
+        _processWatcher = processWatcher;
 
         _player.FrameUpdated += OnPlayerFrameUpdated;
         _player.StateChanged += OnPlayerStateChanged;
@@ -44,6 +56,17 @@ public partial class ControlWindow : Window
         ChkTypingDetection.IsChecked = settings.TypingDetection;
         ChkResourceMonitoring.IsChecked = settings.ResourceMonitoring;
         ChkShowBadges.IsChecked = settings.ShowResourceBadges;
+
+        // Tahap 4: IPC & Process Watcher Settings
+        ChkIpcEnabled.IsChecked = settings.EnableIpc;
+        TxtIpcStatus.Text = settings.EnableIpc ? "Aktif" : "Nonaktif";
+        TxtIpcStatus.Foreground = settings.EnableIpc ? MediaBrushes.LimeGreen : MediaBrushes.Gray;
+
+        ChkProcessWatcher.IsChecked = settings.EnableProcessWatcher;
+        TxtWatcherStatus.Text = settings.EnableProcessWatcher ? "Aktif" : "Nonaktif";
+        TxtWatcherStatus.Foreground = settings.EnableProcessWatcher ? MediaBrushes.LimeGreen : MediaBrushes.Gray;
+
+        RefreshWatchedProcessList();
 
         SliderCpuThreshold.Value = settings.CpuHighThreshold;
         TxtCpuThresholdVal.Text = $"{settings.CpuHighThreshold:0}%";
@@ -199,6 +222,118 @@ public partial class ControlWindow : Window
         _resourceMonitor.SimulatedCpuUsage = null;
         _resourceMonitor.SimulatedRamUsage = null;
         _stateMachine.ClearAllSimulations();
+    }
+
+    // --- Tahap 4: IPC & Process Watcher Handlers ---
+    private void ChkIpcEnabled_Click(object sender, RoutedEventArgs e)
+    {
+        bool isChecked = ChkIpcEnabled.IsChecked == true;
+        SettingsService.Instance.Settings.EnableIpc = isChecked;
+        if (isChecked)
+        {
+            _ipcServer.Start();
+            TxtIpcStatus.Text = "Aktif";
+            TxtIpcStatus.Foreground = MediaBrushes.LimeGreen;
+        }
+        else
+        {
+            _ipcServer.Stop();
+            TxtIpcStatus.Text = "Nonaktif";
+            TxtIpcStatus.Foreground = MediaBrushes.Gray;
+        }
+        SettingsService.Instance.Save();
+    }
+
+    private async void BtnSendIpcEvent_Click(object sender, RoutedEventArgs e)
+    {
+        if (CmbEventType.SelectedItem is not ComboBoxItem selectedItem) return;
+        string eventType = (selectedItem.Tag as string) ?? "start";
+
+        int timeout = 5;
+        if (int.TryParse(TxtIpcTimeout.Text, out int parsedTimeout))
+        {
+            timeout = parsedTimeout;
+        }
+
+        var message = new PetEventMessage
+        {
+            Event = eventType,
+            Title = string.IsNullOrWhiteSpace(TxtIpcTitle.Text) ? null : TxtIpcTitle.Text.Trim(),
+            Message = string.IsNullOrWhiteSpace(TxtIpcMessage.Text) ? null : TxtIpcMessage.Text.Trim(),
+            ActionLabel = string.IsNullOrWhiteSpace(TxtIpcActionLabel.Text) ? null : TxtIpcActionLabel.Text.Trim(),
+            TimeoutSeconds = timeout
+        };
+
+        TxtIpcResult.Text = "Mengirim pesan via named pipe...";
+        TxtIpcResult.Foreground = MediaBrushes.Yellow;
+
+        try
+        {
+            using var client = new NamedPipeClientStream(".", NamedPipeIpcServer.DefaultPipeName, PipeDirection.InOut);
+            await client.ConnectAsync(1500);
+
+            using var writer = new StreamWriter(client, System.Text.Encoding.UTF8, leaveOpen: true) { AutoFlush = true };
+            using var reader = new StreamReader(client, System.Text.Encoding.UTF8, leaveOpen: true);
+
+            string json = JsonSerializer.Serialize(message);
+            await writer.WriteLineAsync(json);
+
+            string? responseJson = await reader.ReadLineAsync();
+            if (!string.IsNullOrWhiteSpace(responseJson))
+            {
+                var response = JsonSerializer.Deserialize<PetEventResponse>(responseJson);
+                TxtIpcResult.Text = $"Respons Pipe: {response?.Status} - {response?.Message}";
+                TxtIpcResult.Foreground = MediaBrushes.LimeGreen;
+            }
+            else
+            {
+                TxtIpcResult.Text = "Pesan terkirim (tanpa teks balasan).";
+                TxtIpcResult.Foreground = MediaBrushes.LightSkyBlue;
+            }
+        }
+        catch (Exception ex)
+        {
+            TxtIpcResult.Text = $"Gagal terhubung ke pipe: {ex.Message}";
+            TxtIpcResult.Foreground = MediaBrushes.IndianRed;
+        }
+    }
+
+    private void ChkProcessWatcher_Click(object sender, RoutedEventArgs e)
+    {
+        bool isChecked = ChkProcessWatcher.IsChecked == true;
+        _processWatcher.IsEnabled = isChecked;
+        SettingsService.Instance.Settings.EnableProcessWatcher = isChecked;
+        TxtWatcherStatus.Text = isChecked ? "Aktif" : "Nonaktif";
+        TxtWatcherStatus.Foreground = isChecked ? MediaBrushes.LimeGreen : MediaBrushes.Gray;
+        SettingsService.Instance.Save();
+    }
+
+    private void BtnAddProcess_Click(object sender, RoutedEventArgs e)
+    {
+        string name = TxtNewProcessName.Text.Trim();
+        if (string.IsNullOrWhiteSpace(name)) return;
+
+        _processWatcher.AddTargetProcess(name);
+        SettingsService.Instance.Settings.WatchedProcesses = _processWatcher.TargetProcessNames.ToList();
+        SettingsService.Instance.Save();
+        RefreshWatchedProcessList();
+        TxtNewProcessName.Clear();
+    }
+
+    private void BtnRemoveProcess_Click(object sender, RoutedEventArgs e)
+    {
+        if (LstWatchedProcesses.SelectedItem is string selectedProcess)
+        {
+            _processWatcher.RemoveTargetProcess(selectedProcess);
+            SettingsService.Instance.Settings.WatchedProcesses = _processWatcher.TargetProcessNames.ToList();
+            SettingsService.Instance.Save();
+            RefreshWatchedProcessList();
+        }
+    }
+
+    private void RefreshWatchedProcessList()
+    {
+        LstWatchedProcesses.ItemsSource = _processWatcher.TargetProcessNames.OrderBy(p => p).ToList();
     }
 
     // --- Behavioral Settings ---

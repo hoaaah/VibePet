@@ -13,35 +13,40 @@ public class SpriteSheetManager
     private readonly Dictionary<PetAnimationState, BitmapSource[]> _animationFrames = new();
     private readonly Dictionary<GazeDirection, BitmapSource> _gazeFrames = new();
 
+    private readonly object _lock = new();
     public bool IsLoaded { get; private set; }
 
     public void Load()
     {
         if (IsLoaded) return;
-
-        BitmapSource fullSheet = LoadSheetSource();
-
-        // Slice animation frames (rows 0-8)
-        foreach (var (state, def) in AnimationCatalog.Animations)
+        lock (_lock)
         {
-            var frames = new BitmapSource[def.FrameCount];
-            for (int i = 0; i < def.FrameCount; i++)
+            if (IsLoaded) return;
+
+            BitmapSource fullSheet = LoadSheetSource();
+
+            // Slice animation frames (rows 0-8)
+            foreach (var (state, def) in AnimationCatalog.Animations)
             {
-                int col = def.FrameIndices[i];
-                int row = def.RowIndex;
-                frames[i] = ExtractCell(fullSheet, row, col);
+                var frames = new BitmapSource[def.FrameCount];
+                for (int i = 0; i < def.FrameCount; i++)
+                {
+                    int col = def.FrameIndices[i];
+                    int row = def.RowIndex;
+                    frames[i] = ExtractCell(fullSheet, row, col);
+                }
+                _animationFrames[state] = frames;
             }
-            _animationFrames[state] = frames;
-        }
 
-        // Slice gaze poses (rows 9-10)
-        foreach (GazeDirection gaze in Enum.GetValues<GazeDirection>())
-        {
-            var (row, col) = AnimationCatalog.GetGazeCell(gaze);
-            _gazeFrames[gaze] = ExtractCell(fullSheet, row, col);
-        }
+            // Slice gaze poses (rows 9-10)
+            foreach (GazeDirection gaze in Enum.GetValues<GazeDirection>())
+            {
+                var (row, col) = AnimationCatalog.GetGazeCell(gaze);
+                _gazeFrames[gaze] = ExtractCell(fullSheet, row, col);
+            }
 
-        IsLoaded = true;
+            IsLoaded = true;
+        }
     }
 
     private static BitmapSource LoadSheetSource()

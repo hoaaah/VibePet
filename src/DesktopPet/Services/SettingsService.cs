@@ -19,6 +19,9 @@ public class PetSettings
     public double CpuLowThreshold { get; set; } = 60.0;
     public double RamHighThreshold { get; set; } = 85.0;
     public double RamLowThreshold { get; set; } = 75.0;
+    public bool EnableIpc { get; set; } = true;
+    public bool EnableProcessWatcher { get; set; } = true;
+    public List<string> WatchedProcesses { get; set; } = ["dotnet", "node", "pwsh", "cargo", "ffmpeg", "code"];
 }
 
 public class SettingsService
