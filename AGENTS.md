@@ -10,9 +10,13 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
 
 - **Tahap 1 (Pet dasar) selesai dan terverifikasi:** Proyek C# WPF (.NET 8 LTS) telah di-scaffold di `src/DesktopPet`, aset `spritesheet.png` (RGBA 32-bit lossless) berhasil dibuat dan dipotong ke cache memori, sprite player dengan adaptif timer aktif, overlay transparan borderless dengan drag & drop dan respon jumping selesai dibuat, menu kontrol interaktif serta context menu 9 animasi & 16 arah pandang selesai, tray icon aktif, serta persistensi posisi multi-monitor (`settings.json`) berfungsi. 14 unit tests di `tests/DesktopPet.Tests` lulus 100%.
 - **Tahap 2 (Perilaku dan aktivitas user) selesai dan terverifikasi:** Hierarki prioritas `PetStateMachine` aktif dengan pemulihan otomatis dari animasi one-shot (`Waving`, `Jumping`), deteksi mengetik ramah antivirus non-invasif (`GetLastInputInfo` + delta kursor) memicu animasi `Review`, penjejakan 16 arah pandang (`GazeTracker`) dengan deadzone netral mengikuti kursor mouse saat idle, sistem perpindahan pet mandiri (`PetMovementManager` - Auto Wander dengan animasi `RunningRight`/`RunningLeft`), opsi aksesibilitas `ReducedMotion` serta toggle preferensi tersimpan di `settings.json`, kontrol simulasi event di Panel Kontrol selesai diuji, dan 28 unit tests lulus 100%.
+- **Tahap 3 (Resource komputer & Benchmark) selesai dan terverifikasi:** Monitoring CPU (`GetSystemTimes`) dan RAM (`GlobalMemoryStatusEx`) berjalan di thread terpisah tanpa membebani UI loop. Sistem hysteresis dengan *sustain counter* mencegah osilasi pergantian state. Efek visual keringat di kepala pet dan badge beban sistem (`🔥 CPU`, `⚡ RAM`) aktif saat beban tinggi dan otomatis hilang saat beban kembali normal. 32 unit tests lulus 100%.
+- **Hasil Benchmark Overhead Resmi (.NET 8 Windows x64):**
+  - *Skenario 1 (Idle + Monitoring 1s):* Working Set RAM 88.7 MB (Puncak 90.0 MB), CPU 0.69%, GC 0.
+  - *Skenario 2 (Animasi Aktif Loop):* Working Set RAM 90.5 MB (Puncak 90.6 MB), CPU 0.32%, GC 0.
+  - *Skenario 3 (Monitoring Agresif 250ms):* Working Set RAM 90.7 MB (Puncak 90.7 MB), CPU 0.37%, GC 0.
 - Aset berasal dari pet terpilih `Kawahime`.
-- Tahap berikutnya yang menunggu eksekusi: Tahap 3 (Resource komputer: CPU & RAM sampling, indikator beban tinggi, benchmark overhead).
-- Belum ada benchmark RAM/CPU resmi atau daftar aplikasi pihak ketiga yang diintegrasikan via named pipes.
+- Tahap berikutnya yang menunggu eksekusi: Tahap 4 (Integrasi aplikasi: Named pipes IPC, event proses dimulai/selesai/gagal/butuh respons, balon notifikasi).
 
 ## Stack yang direncanakan
 

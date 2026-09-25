@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Desktop Pet — Panel Kontrol &amp; Tester"
-        Height="700" Width="470"
+        Height="780" Width="480"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResizeWithGrip"
         Background="#1E1E2E"
@@ -50,6 +50,12 @@
             <Setter Property="Margin" Value="0,4,0,8"/>
             <Setter Property="Padding" Value="8"/>
         </Style>
+        <Style TargetType="ProgressBar">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Background" Value="#313244"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#89B4FA"/>
+        </Style>
     </Window.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -63,6 +69,70 @@
                 </StackPanel>
             </Border>
 
+            <!-- Resource Monitoring & Live Overhead (Tahap 3) -->
+            <GroupBox Header="Resource Komputer &amp; Overhead (Tahap 3)">
+                <StackPanel>
+                    <!-- System CPU -->
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Beban CPU Sistem:" FontSize="11" Foreground="#A6ADC8"/>
+                        <TextBlock x:Name="TxtLiveCpu" Grid.Column="1" Text="0.0%" FontSize="11" FontWeight="Bold" Foreground="#89B4FA"/>
+                    </Grid>
+                    <ProgressBar x:Name="PbCpu" Minimum="0" Maximum="100" Value="0" Margin="0,2,0,6"/>
+
+                    <!-- System RAM -->
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Penggunaan RAM Sistem:" FontSize="11" Foreground="#A6ADC8"/>
+                        <TextBlock x:Name="TxtLiveRam" Grid.Column="1" Text="0.0% (0.0 / 0.0 GB)" FontSize="11" FontWeight="Bold" Foreground="#FAB387"/>
+                    </Grid>
+                    <ProgressBar x:Name="PbRam" Minimum="0" Maximum="100" Value="0" Margin="0,2,0,6" Foreground="#FAB387"/>
+
+                    <!-- App Overhead Footprint -->
+                    <Border Background="#181825" CornerRadius="6" Padding="8,6" Margin="0,2,0,8">
+                        <TextBlock x:Name="TxtAppFootprint" Text="DesktopPet Overhead: RAM 0.0 MB | CPU 0.0%" FontSize="11" Foreground="#A6E3A1"/>
+                    </Border>
+
+                    <!-- Threshold Sliders & Hysteresis -->
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Ambang CPU Tinggi:" FontSize="11" VerticalAlignment="Center"/>
+                        <Slider x:Name="SliderCpuThreshold" Grid.Column="1" Minimum="40" Maximum="95" Value="80"
+                                ValueChanged="SliderCpuThreshold_ValueChanged" Margin="8,0"/>
+                        <TextBlock x:Name="TxtCpuThresholdVal" Grid.Column="2" Text="80%" FontSize="11" FontWeight="Bold"/>
+                    </Grid>
+                    <Grid Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Ambang RAM Tinggi:" FontSize="11" VerticalAlignment="Center"/>
+                        <Slider x:Name="SliderRamThreshold" Grid.Column="1" Minimum="40" Maximum="95" Value="85"
+                                ValueChanged="SliderRamThreshold_ValueChanged" Margin="8,0"/>
+                        <TextBlock x:Name="TxtRamThresholdVal" Grid.Column="2" Text="85%" FontSize="11" FontWeight="Bold"/>
+                    </Grid>
+
+                    <!-- Resource Simulations -->
+                    <TextBlock Text="Simulasi Beban Sistem:" FontSize="11" Foreground="#A6ADC8" Margin="0,6,0,2"/>
+                    <WrapPanel Orientation="Horizontal">
+                        <Button Content="🔥 Simulasikan CPU Tinggi (92%)" Click="BtnSimulateHighCpu_Click" Width="205"/>
+                        <Button Content="⚡ Simulasikan RAM Penuh (88%)" Click="BtnSimulateHighRam_Click" Width="205"/>
+                    </WrapPanel>
+                    <Button Content="Normalkan Beban Sistem" Background="#45475A" Click="BtnNormalizeResource_Click" Margin="3,4,3,0"/>
+                </StackPanel>
+            </GroupBox>
+
             <!-- State Machine & Event Simulation -->
             <GroupBox Header="Simulasi Event &amp; Prioritas (Tahap 2)">
                 <StackPanel>
@@ -71,8 +141,8 @@
                     <CheckBox x:Name="ChkSimWaiting" Content="Simulasikan Butuh Respons (Waiting)" Click="ChkSimWaiting_Click"/>
                     <CheckBox x:Name="ChkSimWork" Content="Simulasikan Kerja Komputer (Running)" Click="ChkSimWork_Click"/>
                     <WrapPanel Orientation="Horizontal" Margin="0,6,0,0">
-                        <Button Content="Kirim Notifikasi (Waving 1x)" Click="BtnSimNotification_Click" Width="200"/>
-                        <Button Content="Tugas Selesai (Jumping 1x)" Click="BtnSimSuccess_Click" Width="200"/>
+                        <Button Content="Kirim Notifikasi (Waving 1x)" Click="BtnSimNotification_Click" Width="205"/>
+                        <Button Content="Tugas Selesai (Jumping 1x)" Click="BtnSimSuccess_Click" Width="205"/>
                     </WrapPanel>
                     <Button Content="Reset Semua Simulasi Event" Background="#45475A" Click="BtnResetSimulations_Click" Margin="3,6,3,0"/>
                 </StackPanel>
@@ -82,7 +152,7 @@
             <GroupBox Header="9 Animasi Utama (Manual Test — Terkunci dari Gaze)">
                 <StackPanel>
                     <TextBlock Text="Klik salah satu animasi di bawah untuk memutarnya terus-menerus:" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,4"/>
-                    <WrapPanel Orientation="Horizontal" ItemWidth="200">
+                    <WrapPanel Orientation="Horizontal" ItemWidth="205">
                         <Button Content="0. Idle (Diam Berdiri)" Click="BtnIdle_Click"/>
                         <Button Content="1. Berlari ke Kanan" Click="BtnRunRight_Click" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold"/>
                         <Button Content="2. Berlari ke Kiri" Click="BtnRunLeft_Click" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold"/>
@@ -101,7 +171,7 @@
             <GroupBox Header="16 Arah Pandang (Manual Test)">
                 <StackPanel>
                     <TextBlock Text="Baris 9: 0° s/d 157.5°" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,2"/>
-                    <WrapPanel Orientation="Horizontal" ItemWidth="100">
+                    <WrapPanel Orientation="Horizontal" ItemWidth="102">
                         <Button Content="0° (Atas)" Click="BtnGaze_Click" Tag="0"/>
                         <Button Content="22.5°" Click="BtnGaze_Click" Tag="1"/>
                         <Button Content="45° (Ka-Atas)" Click="BtnGaze_Click" Tag="2"/>
@@ -113,7 +183,7 @@
                     </WrapPanel>
 
                     <TextBlock Text="Baris 10: 180° s/d 337.5°" FontSize="11" Foreground="#A6ADC8" Margin="4,6,0,2"/>
-                    <WrapPanel Orientation="Horizontal" ItemWidth="100">
+                    <WrapPanel Orientation="Horizontal" ItemWidth="102">
                         <Button Content="180° (Bawah)" Click="BtnGaze_Click" Tag="8"/>
                         <Button Content="202.5°" Click="BtnGaze_Click" Tag="9"/>
                         <Button Content="225° (Ki-Bwh)" Click="BtnGaze_Click" Tag="10"/>
@@ -133,6 +203,8 @@
                     <CheckBox x:Name="ChkAutoWander" Content="Auto Wander (Pet sesekali jalan-jalan otomatis)" Click="ChkAutoWander_Click"/>
                     <CheckBox x:Name="ChkGazeTracking" Content="Gaze Tracking (Arah pandang ikuti mouse saat netral)" Click="ChkGazeTracking_Click"/>
                     <CheckBox x:Name="ChkTypingDetection" Content="Deteksi Mengetik (Mengetik memicu Review)" Click="ChkTypingDetection_Click"/>
+                    <CheckBox x:Name="ChkResourceMonitoring" Content="Resource Monitoring Aktif (CPU &amp; RAM Sampling)" Click="ChkResourceMonitoring_Click"/>
+                    <CheckBox x:Name="ChkShowBadges" Content="Tampilkan Indikator Beban (Keringat / Badge)" Click="ChkShowBadges_Click"/>
                 </StackPanel>
             </GroupBox>
 

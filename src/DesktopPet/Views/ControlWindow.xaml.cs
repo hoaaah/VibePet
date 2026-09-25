@@ -12,6 +12,7 @@ public partial class ControlWindow : Window
     private readonly PetStateMachine _stateMachine;
     private readonly PetMovementManager _movementManager;
     private readonly ActivityDetector _activityDetector;
+    private readonly ResourceMonitor _resourceMonitor;
     private bool _isPaused = false;
 
     public ControlWindow(
@@ -19,7 +20,8 @@ public partial class ControlWindow : Window
         SpritePlayer player,
         PetStateMachine stateMachine,
         PetMovementManager movementManager,
-        ActivityDetector activityDetector)
+        ActivityDetector activityDetector,
+        ResourceMonitor resourceMonitor)
     {
         InitializeComponent();
         _mainWindow = mainWindow;
@@ -27,10 +29,12 @@ public partial class ControlWindow : Window
         _stateMachine = stateMachine;
         _movementManager = movementManager;
         _activityDetector = activityDetector;
+        _resourceMonitor = resourceMonitor;
 
         _player.FrameUpdated += OnPlayerFrameUpdated;
         _player.StateChanged += OnPlayerStateChanged;
         _stateMachine.StateChanged += OnStateMachineChanged;
+        _resourceMonitor.MetricsUpdated += OnResourceMetricsUpdated;
 
         var settings = SettingsService.Instance.Settings;
         SliderScale.Value = settings.Scale;
@@ -38,6 +42,14 @@ public partial class ControlWindow : Window
         ChkAutoWander.IsChecked = settings.AutoWander;
         ChkGazeTracking.IsChecked = settings.GazeTracking;
         ChkTypingDetection.IsChecked = settings.TypingDetection;
+        ChkResourceMonitoring.IsChecked = settings.ResourceMonitoring;
+        ChkShowBadges.IsChecked = settings.ShowResourceBadges;
+
+        SliderCpuThreshold.Value = settings.CpuHighThreshold;
+        TxtCpuThresholdVal.Text = $"{settings.CpuHighThreshold:0}%";
+
+        SliderRamThreshold.Value = settings.RamHighThreshold;
+        TxtRamThresholdVal.Text = $"{settings.RamHighThreshold:0}%";
 
         UpdateStatusText();
     }
@@ -62,6 +74,20 @@ public partial class ControlWindow : Window
         });
     }
 
+    private void OnResourceMetricsUpdated(ResourceMetrics metrics)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            PbCpu.Value = metrics.CpuUsagePercentage;
+            TxtLiveCpu.Text = $"{metrics.CpuUsagePercentage:0.0}%";
+
+            PbRam.Value = metrics.RamUsagePercentage;
+            TxtLiveRam.Text = $"{metrics.RamUsagePercentage:0.0}% ({metrics.RamUsedGb:0.0} / {metrics.RamTotalGb:0.0} GB)";
+
+            TxtAppFootprint.Text = $"DesktopPet Overhead: RAM {metrics.AppWorkingSetMb:0.0} MB | CPU {metrics.AppCpuPercentage:0.00}%";
+        });
+    }
+
     private void UpdateStatusText()
     {
         if (_player.IsStaticGaze && _player.CurrentGaze.HasValue)
@@ -77,6 +103,66 @@ public partial class ControlWindow : Window
 
             TxtStatus.Text = $"Status: {stateName} (Frame {_player.CurrentFrameIndex + 1}/{_player.TotalFrames})";
         }
+    }
+
+    // --- Resource Monitor Controls & Simulations ---
+    private void SliderCpuThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (TxtCpuThresholdVal == null) return;
+        double val = Math.Round(e.NewValue);
+        TxtCpuThresholdVal.Text = $"{val:0}%";
+
+        var settings = SettingsService.Instance.Settings;
+        settings.CpuHighThreshold = val;
+        settings.CpuLowThreshold = Math.Max(20, val - 20); // 20% hysteresis band
+        _resourceMonitor.CpuHighThreshold = settings.CpuHighThreshold;
+        _resourceMonitor.CpuLowThreshold = settings.CpuLowThreshold;
+        SettingsService.Instance.Save();
+    }
+
+    private void SliderRamThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (TxtRamThresholdVal == null) return;
+        double val = Math.Round(e.NewValue);
+        TxtRamThresholdVal.Text = $"{val:0}%";
+
+        var settings = SettingsService.Instance.Settings;
+        settings.RamHighThreshold = val;
+        settings.RamLowThreshold = Math.Max(20, val - 10); // 10% hysteresis band
+        _resourceMonitor.RamHighThreshold = settings.RamHighThreshold;
+        _resourceMonitor.RamLowThreshold = settings.RamLowThreshold;
+        SettingsService.Instance.Save();
+    }
+
+    private void BtnSimulateHighCpu_Click(object sender, RoutedEventArgs e)
+    {
+        _resourceMonitor.SimulatedCpuUsage = 92.0;
+    }
+
+    private void BtnSimulateHighRam_Click(object sender, RoutedEventArgs e)
+    {
+        _resourceMonitor.SimulatedRamUsage = 88.0;
+    }
+
+    private void BtnNormalizeResource_Click(object sender, RoutedEventArgs e)
+    {
+        _resourceMonitor.SimulatedCpuUsage = null;
+        _resourceMonitor.SimulatedRamUsage = null;
+    }
+
+    private void ChkResourceMonitoring_Click(object sender, RoutedEventArgs e)
+    {
+        bool val = ChkResourceMonitoring.IsChecked == true;
+        _resourceMonitor.IsEnabled = val;
+        SettingsService.Instance.Settings.ResourceMonitoring = val;
+        SettingsService.Instance.Save();
+    }
+
+    private void ChkShowBadges_Click(object sender, RoutedEventArgs e)
+    {
+        bool val = ChkShowBadges.IsChecked == true;
+        SettingsService.Instance.Settings.ShowResourceBadges = val;
+        SettingsService.Instance.Save();
     }
 
     // --- State Machine & Simulations ---
@@ -110,6 +196,8 @@ public partial class ControlWindow : Window
         ChkSimError.IsChecked = false;
         ChkSimWaiting.IsChecked = false;
         ChkSimWork.IsChecked = false;
+        _resourceMonitor.SimulatedCpuUsage = null;
+        _resourceMonitor.SimulatedRamUsage = null;
         _stateMachine.ClearAllSimulations();
     }
 

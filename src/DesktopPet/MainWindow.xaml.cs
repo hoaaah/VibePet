@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     private readonly PetStateMachine _stateMachine;
     private readonly ActivityDetector _activityDetector;
     private readonly GazeTracker _gazeTracker;
+    private readonly ResourceMonitor _resourceMonitor;
     private PetMovementManager? _movementManager;
     private ControlWindow? _controlWindow;
     private TrayIconManager? _trayManager;
@@ -41,6 +42,7 @@ public partial class MainWindow : Window
         _stateMachine = new PetStateMachine(_player);
         _activityDetector = new ActivityDetector();
         _gazeTracker = new GazeTracker();
+        _resourceMonitor = new ResourceMonitor(1000);
 
         BuildContextMenu();
     }
@@ -72,8 +74,17 @@ public partial class MainWindow : Window
         _activityDetector.CursorMoved += OnCursorMoved;
         _activityDetector.Start();
 
+        // Wire Resource Monitor (CPU & RAM sampling)
+        _resourceMonitor.IsEnabled = _settingsService.Settings.ResourceMonitoring;
+        _resourceMonitor.CpuHighThreshold = _settingsService.Settings.CpuHighThreshold;
+        _resourceMonitor.CpuLowThreshold = _settingsService.Settings.CpuLowThreshold;
+        _resourceMonitor.RamHighThreshold = _settingsService.Settings.RamHighThreshold;
+        _resourceMonitor.RamLowThreshold = _settingsService.Settings.RamLowThreshold;
+        _resourceMonitor.MetricsUpdated += OnResourceMetricsUpdated;
+        _resourceMonitor.Start();
+
         // Initialize ControlWindow and TrayManager
-        _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector);
+        _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector, _resourceMonitor);
         _trayManager = new TrayIconManager(this, _controlWindow);
 
         _movementManager.Start();
@@ -128,6 +139,46 @@ public partial class MainWindow : Window
         });
     }
 
+    private void OnResourceMetricsUpdated(ResourceMetrics metrics)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            if (!_settingsService.Settings.ShowResourceBadges)
+            {
+                SweatCanvas.Visibility = Visibility.Collapsed;
+                CpuBadge.Visibility = Visibility.Collapsed;
+                RamBadge.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            // CPU high load -> sweat drop + CPU badge + trigger state machine ComputerWork
+            if (metrics.IsCpuHigh)
+            {
+                SweatCanvas.Visibility = Visibility.Visible;
+                CpuBadge.Visibility = Visibility.Visible;
+                TxtCpuBadge.Text = $"🔥 CPU {metrics.CpuUsagePercentage:0}%";
+                _stateMachine.SetComputerWork(true);
+            }
+            else
+            {
+                SweatCanvas.Visibility = Visibility.Collapsed;
+                CpuBadge.Visibility = Visibility.Collapsed;
+                _stateMachine.SetComputerWork(false);
+            }
+
+            // RAM high load -> RAM badge
+            if (metrics.IsRamHigh)
+            {
+                RamBadge.Visibility = Visibility.Visible;
+                TxtRamBadge.Text = $"⚡ RAM {metrics.RamUsagePercentage:0}% ({metrics.RamUsedGb:0.0} GB)";
+            }
+            else
+            {
+                RamBadge.Visibility = Visibility.Collapsed;
+            }
+        });
+    }
+
     public void SetScale(double scale)
     {
         _currentScale = Math.Clamp(scale, 0.5, 3.0);
@@ -136,6 +187,8 @@ public partial class MainWindow : Window
 
         PetImage.Width = w;
         PetImage.Height = h;
+        SweatCanvas.Width = w;
+        SweatCanvas.Height = h;
         Width = w;
         Height = h;
 
@@ -325,6 +378,39 @@ public partial class MainWindow : Window
         };
         itemTyping.Click += (s, e) => SetTypingDetection(itemTyping.IsChecked);
         MenuBehavior.Items.Add(itemTyping);
+
+        var itemResource = new MenuItem
+        {
+            Header = "Resource Monitoring (CPU & RAM)",
+            IsCheckable = true,
+            IsChecked = settings.ResourceMonitoring
+        };
+        itemResource.Click += (s, e) =>
+        {
+            settings.ResourceMonitoring = itemResource.IsChecked;
+            _resourceMonitor.IsEnabled = itemResource.IsChecked;
+            _settingsService.Save();
+        };
+        MenuBehavior.Items.Add(itemResource);
+
+        var itemBadges = new MenuItem
+        {
+            Header = "Tampilkan Badge Beban (Keringat)",
+            IsCheckable = true,
+            IsChecked = settings.ShowResourceBadges
+        };
+        itemBadges.Click += (s, e) =>
+        {
+            settings.ShowResourceBadges = itemBadges.IsChecked;
+            if (!settings.ShowResourceBadges)
+            {
+                SweatCanvas.Visibility = Visibility.Collapsed;
+                CpuBadge.Visibility = Visibility.Collapsed;
+                RamBadge.Visibility = Visibility.Collapsed;
+            }
+            _settingsService.Save();
+        };
+        MenuBehavior.Items.Add(itemBadges);
     }
 
     private void MenuOpenControl_Click(object sender, RoutedEventArgs e)
@@ -348,6 +434,7 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
+        _resourceMonitor.Dispose();
         _activityDetector.Dispose();
         _movementManager?.Dispose();
 

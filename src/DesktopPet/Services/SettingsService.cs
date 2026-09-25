@@ -13,6 +13,12 @@ public class PetSettings
     public bool AutoWander { get; set; } = true;
     public bool GazeTracking { get; set; } = true;
     public bool TypingDetection { get; set; } = true;
+    public bool ResourceMonitoring { get; set; } = true;
+    public bool ShowResourceBadges { get; set; } = true;
+    public double CpuHighThreshold { get; set; } = 80.0;
+    public double CpuLowThreshold { get; set; } = 60.0;
+    public double RamHighThreshold { get; set; } = 85.0;
+    public double RamLowThreshold { get; set; } = 75.0;
 }
 
 public class SettingsService
