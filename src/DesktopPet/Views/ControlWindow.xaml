@@ -1,0 +1,128 @@
+<Window x:Class="DesktopPet.Views.ControlWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Desktop Pet — Panel Kontrol &amp; Tester"
+        Height="540" Width="440"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Background="#1E1E2E"
+        Foreground="#CDD6F4"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#313244"/>
+            <Setter Property="Foreground" Value="#CDD6F4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#45475A"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#45475A"/>
+                                <Setter Property="BorderBrush" Value="#89B4FA"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#585B70"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="GroupBox">
+            <Setter Property="Foreground" Value="#89B4FA"/>
+            <Setter Property="BorderBrush" Value="#45475A"/>
+            <Setter Property="Margin" Value="0,4,0,8"/>
+            <Setter Property="Padding" Value="8"/>
+        </Style>
+    </Window.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="14">
+            <!-- Header & Status -->
+            <Border Background="#181825" CornerRadius="8" Padding="12" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="Kawahime Desktop Pet" FontSize="16" FontWeight="Bold" Foreground="#89B4FA"/>
+                    <TextBlock x:Name="TxtStatus" Text="Status: Idle (Frame 0/6)" Margin="0,4,0,0" Foreground="#A6ADC8" FontSize="12"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 9 Main Animations -->
+            <GroupBox Header="9 Animasi Utama (Baris 0–8)">
+                <WrapPanel Orientation="Horizontal" ItemWidth="195">
+                    <Button Content="0. Idle (Diam)" Click="BtnIdle_Click"/>
+                    <Button Content="1. Running Right (Kanan)" Click="BtnRunRight_Click"/>
+                    <Button Content="2. Running Left (Kiri)" Click="BtnRunLeft_Click"/>
+                    <Button Content="3. Waving (Notifikasi)" Click="BtnWaving_Click"/>
+                    <Button Content="4. Jumping (Selesai/Klik)" Click="BtnJumping_Click"/>
+                    <Button Content="5. Failed (Error)" Click="BtnFailed_Click"/>
+                    <Button Content="6. Waiting (Butuh Aksi)" Click="BtnWaiting_Click"/>
+                    <Button Content="7. Running (Kerja Komputer)" Click="BtnRunWork_Click"/>
+                    <Button Content="8. Review (Mengetik)" Click="BtnReview_Click"/>
+                </WrapPanel>
+            </GroupBox>
+
+            <!-- 16 Gaze Poses -->
+            <GroupBox Header="16 Arah Pandang (Baris 9–10)">
+                <StackPanel>
+                    <TextBlock Text="Baris 9: 0° s/d 157.5°" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,2"/>
+                    <WrapPanel Orientation="Horizontal" ItemWidth="95">
+                        <Button Content="0° (Atas)" Click="BtnGaze_Click" Tag="0"/>
+                        <Button Content="22.5°" Click="BtnGaze_Click" Tag="1"/>
+                        <Button Content="45° (Ka-Atas)" Click="BtnGaze_Click" Tag="2"/>
+                        <Button Content="67.5°" Click="BtnGaze_Click" Tag="3"/>
+                        <Button Content="90° (Kanan)" Click="BtnGaze_Click" Tag="4"/>
+                        <Button Content="112.5°" Click="BtnGaze_Click" Tag="5"/>
+                        <Button Content="135° (Ka-Bwh)" Click="BtnGaze_Click" Tag="6"/>
+                        <Button Content="157.5°" Click="BtnGaze_Click" Tag="7"/>
+                    </WrapPanel>
+
+                    <TextBlock Text="Baris 10: 180° s/d 337.5°" FontSize="11" Foreground="#A6ADC8" Margin="4,6,0,2"/>
+                    <WrapPanel Orientation="Horizontal" ItemWidth="95">
+                        <Button Content="180° (Bawah)" Click="BtnGaze_Click" Tag="8"/>
+                        <Button Content="202.5°" Click="BtnGaze_Click" Tag="9"/>
+                        <Button Content="225° (Ki-Bwh)" Click="BtnGaze_Click" Tag="10"/>
+                        <Button Content="247.5°" Click="BtnGaze_Click" Tag="11"/>
+                        <Button Content="270° (Kiri)" Click="BtnGaze_Click" Tag="12"/>
+                        <Button Content="292.5°" Click="BtnGaze_Click" Tag="13"/>
+                        <Button Content="315° (Ki-Atas)" Click="BtnGaze_Click" Tag="14"/>
+                        <Button Content="337.5°" Click="BtnGaze_Click" Tag="15"/>
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Scale & Window Controls -->
+            <GroupBox Header="Pengaturan Ukuran &amp; Kontrol">
+                <StackPanel>
+                    <Grid Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Skala: " VerticalAlignment="Center"/>
+                        <Slider x:Name="SliderScale" Grid.Column="1" Minimum="0.5" Maximum="2.5" Value="1.0"
+                                SmallChange="0.25" LargeChange="0.5" TickFrequency="0.25" IsSnapToTickEnabled="True"
+                                ValueChanged="SliderScale_ValueChanged" Margin="8,0"/>
+                        <TextBlock x:Name="TxtScaleValue" Grid.Column="2" Text="1.0x" VerticalAlignment="Center" FontWeight="Bold"/>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <Button x:Name="BtnPauseResume" Content="Pause" Width="90" Click="BtnPauseResume_Click"/>
+                        <Button Content="Reset Posisi" Width="100" Click="BtnResetPos_Click"/>
+                        <Button Content="Tutup Pet" Width="90" Background="#F38BA8" Foreground="#11111B" Click="BtnExit_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

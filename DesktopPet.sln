@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{496D59F2-BD45-411A-BC45-7B3DF2F94179}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopPet", "src\DesktopPet\DesktopPet.csproj", "{92D9E02B-5FC5-470C-998A-3665BCA7CEC1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5D9860A9-A459-495F-9411-033DCB7F02D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopPet.Tests", "tests\DesktopPet.Tests\DesktopPet.Tests.csproj", "{410DEC9A-E91A-416A-A853-411325DBB56A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92D9E02B-5FC5-470C-998A-3665BCA7CEC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92D9E02B-5FC5-470C-998A-3665BCA7CEC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92D9E02B-5FC5-470C-998A-3665BCA7CEC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92D9E02B-5FC5-470C-998A-3665BCA7CEC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{410DEC9A-E91A-416A-A853-411325DBB56A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{410DEC9A-E91A-416A-A853-411325DBB56A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{410DEC9A-E91A-416A-A853-411325DBB56A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{410DEC9A-E91A-416A-A853-411325DBB56A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{92D9E02B-5FC5-470C-998A-3665BCA7CEC1} = {496D59F2-BD45-411A-BC45-7B3DF2F94179}
+		{410DEC9A-E91A-416A-A853-411325DBB56A} = {5D9860A9-A459-495F-9411-033DCB7F02D2}
+	EndGlobalSection
+EndGlobal

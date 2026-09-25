@@ -1,0 +1,35 @@
+<Window x:Class="DesktopPet.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DesktopPet"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+    <Window.ContextMenu>
+        <ContextMenu x:Name="PetContextMenu">
+            <MenuItem Header="Animasi" x:Name="MenuAnimations"/>
+            <MenuItem Header="Arah Pandang" x:Name="MenuGaze"/>
+            <MenuItem Header="Ukuran Pet" x:Name="MenuScale"/>
+            <Separator/>
+            <MenuItem Header="Panel Kontrol &amp; Tester..." Click="MenuOpenControl_Click"/>
+            <MenuItem Header="Reset Posisi" Click="MenuResetPos_Click"/>
+            <Separator/>
+            <MenuItem Header="Keluar" Click="MenuExit_Click"/>
+        </ContextMenu>
+    </Window.ContextMenu>
+
+    <Grid x:Name="RootGrid" Background="Transparent" Cursor="SizeAll">
+        <Image x:Name="PetImage"
+               Width="192" Height="208"
+               Stretch="Fill"
+               RenderOptions.BitmapScalingMode="NearestNeighbor"
+               MouseLeftButtonDown="PetImage_MouseLeftButtonDown"
+               MouseLeftButtonUp="PetImage_MouseLeftButtonUp"/>
+    </Grid>
+</Window>
