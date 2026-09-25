@@ -56,7 +56,8 @@ public partial class ControlWindow : Window
     {
         Dispatcher.InvokeAsync(() =>
         {
-            TxtPriority.Text = $"Prioritas Aktif: {priority} -> Animasi: {state}";
+            string mode = _stateMachine.IsManualTestMode ? "[Manual Lock]" : "[Otomatis]";
+            TxtPriority.Text = $"{mode} Prioritas: {priority} -> Animasi: {state}";
             UpdateStatusText();
         });
     }
@@ -137,23 +138,28 @@ public partial class ControlWindow : Window
         _mainWindow.SetTypingDetection(val);
     }
 
-    // --- Manual Animations ---
-    private void BtnIdle_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.Idle);
-    private void BtnRunRight_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.RunningRight);
-    private void BtnRunLeft_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.RunningLeft);
-    private void BtnWaving_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.Waving, () => _player.PlayAnimation(PetAnimationState.Idle));
-    private void BtnJumping_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.Jumping, () => _player.PlayAnimation(PetAnimationState.Idle));
-    private void BtnFailed_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.Failed);
-    private void BtnWaiting_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.Waiting);
-    private void BtnRunWork_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.Running);
-    private void BtnReview_Click(object sender, RoutedEventArgs e) => _player.PlayAnimation(PetAnimationState.Review);
+    // --- Manual Animations (Locked from Gaze) ---
+    private void BtnIdle_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.Idle);
+    private void BtnRunRight_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.RunningRight);
+    private void BtnRunLeft_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.RunningLeft);
+    private void BtnWaving_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.Waving);
+    private void BtnJumping_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.Jumping);
+    private void BtnFailed_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.Failed);
+    private void BtnWaiting_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.Waiting);
+    private void BtnRunWork_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.Running);
+    private void BtnReview_Click(object sender, RoutedEventArgs e) => _stateMachine.SetManualAnimation(PetAnimationState.Review);
 
     private void BtnGaze_Click(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement fe && fe.Tag is string tagStr && int.TryParse(tagStr, out int index))
         {
-            _player.ShowGaze((GazeDirection)index);
+            _stateMachine.SetManualGaze((GazeDirection)index);
         }
+    }
+
+    private void BtnResumeAuto_Click(object sender, RoutedEventArgs e)
+    {
+        _stateMachine.ClearManualTestMode();
     }
 
     private void SliderScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

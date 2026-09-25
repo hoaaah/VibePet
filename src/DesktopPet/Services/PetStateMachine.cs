@@ -32,6 +32,11 @@ public class PetStateMachine
     public PetAnimationState MovingState { get; private set; } = PetAnimationState.RunningRight;
     public GazeDirection? CurrentGaze { get; private set; }
 
+    // Manual test mode (locks animation so mouse gaze does not override during testing)
+    public bool IsManualTestMode { get; private set; }
+    public PetAnimationState? ManualAnimation { get; private set; }
+    public GazeDirection? ManualGaze { get; private set; }
+
     public PetPriority CurrentPriority { get; private set; } = PetPriority.Idle;
     public PetAnimationState CurrentVisualState => _player.CurrentState;
 
@@ -40,6 +45,30 @@ public class PetStateMachine
     public PetStateMachine(SpritePlayer player)
     {
         _player = player;
+    }
+
+    public void SetManualAnimation(PetAnimationState state)
+    {
+        IsManualTestMode = true;
+        ManualAnimation = state;
+        ManualGaze = null;
+        EvaluateState();
+    }
+
+    public void SetManualGaze(GazeDirection gaze)
+    {
+        IsManualTestMode = true;
+        ManualGaze = gaze;
+        ManualAnimation = null;
+        EvaluateState();
+    }
+
+    public void ClearManualTestMode()
+    {
+        IsManualTestMode = false;
+        ManualAnimation = null;
+        ManualGaze = null;
+        EvaluateState();
     }
 
     public void SetDirectInteraction(bool active)
@@ -93,12 +122,16 @@ public class PetStateMachine
 
     public void SetGaze(GazeDirection? gaze)
     {
+        if (IsManualTestMode) return; // Do not overwrite manual testing
         CurrentGaze = gaze;
         EvaluateState();
     }
 
     public void ClearAllSimulations()
     {
+        IsManualTestMode = false;
+        ManualAnimation = null;
+        ManualGaze = null;
         HasError = false;
         HasNeedsAction = false;
         HasNotification = false;
@@ -112,15 +145,50 @@ public class PetStateMachine
 
     public void EvaluateState()
     {
-        // Calculate highest priority
         PetPriority highest;
         PetAnimationState targetAnimation;
         Action? oneShotCallback = null;
 
-        if (HasDirectInteraction)
+        if (IsManualTestMode)
         {
             highest = PetPriority.DirectInteraction;
-            // Hold current or Jumping when released
+            if (ManualGaze.HasValue)
+            {
+                CurrentPriority = highest;
+                _player.ShowGaze(ManualGaze.Value);
+                StateChanged?.Invoke(highest, PetAnimationState.Gaze);
+                return;
+            }
+            else if (ManualAnimation.HasValue)
+            {
+                targetAnimation = ManualAnimation.Value;
+                if (targetAnimation is PetAnimationState.Waving)
+                {
+                    oneShotCallback = () =>
+                    {
+                        IsManualTestMode = false;
+                        ManualAnimation = null;
+                        EvaluateState();
+                    };
+                }
+                else if (targetAnimation is PetAnimationState.Jumping)
+                {
+                    oneShotCallback = () =>
+                    {
+                        IsManualTestMode = false;
+                        ManualAnimation = null;
+                        EvaluateState();
+                    };
+                }
+            }
+            else
+            {
+                targetAnimation = PetAnimationState.Idle;
+            }
+        }
+        else if (HasDirectInteraction)
+        {
+            highest = PetPriority.DirectInteraction;
             return;
         }
         else if (HasError)
@@ -156,7 +224,7 @@ public class PetStateMachine
         else if (HasComputerWork)
         {
             highest = PetPriority.ComputerWork;
-            targetAnimation = PetAnimationState.Running; // Row 7: PC Work
+            targetAnimation = PetAnimationState.Running; // Row 7: PC Work (thinking/cheering gestures)
         }
         else if (HasUserTyping)
         {
@@ -166,7 +234,7 @@ public class PetStateMachine
         else if (IsMoving)
         {
             highest = PetPriority.Moving;
-            targetAnimation = MovingState; // RunningRight or RunningLeft
+            targetAnimation = MovingState; // Row 1: RunningRight or Row 2: RunningLeft
         }
         else if (CurrentGaze.HasValue)
         {

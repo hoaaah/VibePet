@@ -252,45 +252,15 @@ public partial class MainWindow : Window
             item.Click += (s, e) =>
             {
                 _movementManager?.CancelMovement();
-                if (targetState is PetAnimationState.Waving)
-                {
-                    _stateMachine.TriggerNotification();
-                }
-                else if (targetState is PetAnimationState.Jumping)
-                {
-                    _stateMachine.TriggerJobSuccess();
-                }
-                else if (targetState is PetAnimationState.Failed)
-                {
-                    _stateMachine.SetError(true);
-                }
-                else if (targetState is PetAnimationState.Waiting)
-                {
-                    _stateMachine.SetNeedsAction(true);
-                }
-                else if (targetState is PetAnimationState.Running)
-                {
-                    _stateMachine.SetComputerWork(true);
-                }
-                else if (targetState is PetAnimationState.Review)
-                {
-                    _stateMachine.SetUserTyping(true);
-                }
-                else if (targetState is PetAnimationState.RunningRight)
-                {
-                    _movementManager?.MoveTo(Left + 100);
-                }
-                else if (targetState is PetAnimationState.RunningLeft)
-                {
-                    _movementManager?.MoveTo(Left - 100);
-                }
-                else
-                {
-                    _stateMachine.ClearAllSimulations();
-                }
+                _stateMachine.SetManualAnimation(targetState);
             };
             MenuAnimations.Items.Add(item);
         }
+
+        var itemResume = new MenuItem { Header = "▶️ Kembali ke Mode Otomatis", FontWeight = FontWeights.Bold };
+        itemResume.Click += (s, e) => _stateMachine.ClearManualTestMode();
+        MenuAnimations.Items.Add(new Separator());
+        MenuAnimations.Items.Add(itemResume);
 
         // 2. Gaze directions
         foreach (GazeDirection gaze in Enum.GetValues<GazeDirection>())
@@ -302,7 +272,7 @@ public partial class MainWindow : Window
             item.Click += (s, e) =>
             {
                 _movementManager?.CancelMovement();
-                _player.ShowGaze(targetGaze);
+                _stateMachine.SetManualGaze(targetGaze);
             };
             MenuGaze.Items.Add(item);
         }
