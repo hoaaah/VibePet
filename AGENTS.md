@@ -30,7 +30,12 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
   - *Distribusi Lengkap:* Skrip penginstal PowerShell (`install.ps1`) dan uninstaller (`uninstall.ps1`), skrip installer Inno Setup (`installer.iss`), serta pemaket rilis otomatis (`scripts/package-release.ps1`) yang menghasilkan paket portable `dist/DesktopPet-v1.0.0-win-x64.zip` dan binary root `DesktopPet.exe` (2.66 MB).
   - *44 Unit Tests* di `tests/DesktopPet.Tests` lulus 100%.
 - Aset berasal dari pet terpilih `Kawahime`.
-- Seluruh 5 tahapan pengembangan telah rampung 100%.
+- Seluruh 5 tahapan pengembangan awal telah rampung 100%.
+- **Tahap 6 (Pengembangan Lanjutan — Siap Dieksekusi):**
+  1. *Nama Proses Ramah Pengguna:* Ganti PID teknis pada balon notifikasi dan tooltip tray dengan nama aplikasi bersih (misal `.NET CLI`, `Node.js`, `VS Code`, `PowerShell`, `FFmpeg`).
+  2. *Interactive Drag Movement:* Animasi berlari ke kiri (`RunningLeft`) atau kanan (`RunningRight`) dinamis mengikuti arah seretan kursor pengguna, disusul lompatan gembira (`Jumping`) setelah dilepas.
+  3. *Animasi Kerja Dinamis:* Mengubah running komputer bekerja menjadi berlari aktif bolak-balik (kiri & kanan) atau mondar-mandir santai.
+  4. *Multi-Skin / Sprite Packs System:* Penyimpanan dan pemilihan paket sprite kustom dari `%AppData%\DesktopPet\Skins\` dengan *hot-swap* langsung dari Panel Kontrol & Context Menu tanpa restart.
 
 ## Stack yang direncanakan
 
@@ -173,6 +178,32 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
 - Layanan Auto-Start Windows (`AutoStartService`) via Registry Run `HKCU` dengan kontrol di UI.
 - Skrip penginstal PowerShell (`install.ps1`) dan pembersih (`uninstall.ps1`), konfigurasi Inno Setup (`installer.iss`), serta pemaket rilis otomatis (`scripts/package-release.ps1`).
 - Seluruh 44 unit tests lulus 100%.
+
+### 6. Interaktivitas lanjutan & paket sprite kustom (Roadmap Berikutnya)
+
+1. **Nama Proses Ramah Pengguna (*Friendly Process Names*):**
+   - Menggantikan string PID teknis Windows (`PID: 12345`) pada balon dialog notifikasi dan tooltip tray dengan nama aplikasi bersih.
+   - Menyediakan kamus pemetaan nama umum (misal `dotnet` &rarr; `.NET CLI / Build Tool`, `node` &rarr; `Node.js Runtime`, `pwsh` &rarr; `PowerShell Terminal`, `code` &rarr; `Visual Studio Code`, `cargo` &rarr; `Rust Cargo`, `ffmpeg` &rarr; `FFmpeg Video Processor`).
+   - Proses di luar kamus diformat dengan pembersihan ekstensi `.exe` dan kapitalisasi yang rapi.
+
+2. **Animasi Berlari Interaktif Saat Drag (*Interactive Drag Running*):**
+   - Mengganti penahanan satu frame statis saat drag menjadi animasi dinamis mengikuti arah seretan kursor pengguna.
+   - Membandingkan pergerakan koordinat horizontal kursor mouse (`deltaX`):
+     - `deltaX > 0` &rarr; Animasi `RunningRight` (Baris 1).
+     - `deltaX < 0` &rarr; Animasi `RunningLeft` (Baris 2).
+     - `deltaX == 0` (kursor berhenti saat ditahan) &rarr; Menahan pose berjalan.
+   - Saat mouse dilepas (mouse up), memicu animasi perayaan `Jumping` (Baris 4).
+
+3. **Animasi Komputer Bekerja Berganti ke Berlari Kiri / Kanan (*Running Process Animation*):**
+   - Menghubungkan state `ComputerWork` / `Running` dengan animasi berlari bolak-balik (*pacing / patrolling*) alih-alih berlari statis di tempat.
+   - Pet berlari ke kanan selama durasi tertentu, lalu berbalik ke kiri, menciptakan ilusi bekerja mondar-mandir yang lebih hidup.
+   - Sediakan toggle mode gaya animasi kerja di Panel Kontrol: *Statis di tempat* vs *Berlari bolak-balik*.
+
+4. **Sistem Paket Sprite Kustom (*Custom Sprite Packs / Skins*):**
+   - Struktur direktori skin lokal: `%AppData%\DesktopPet\Skins\<NamaSkin>\` yang memuat `spritesheet.png` dan berkas opsional `skin.json` (metadata author, dimensi sel atlas, durasi frame).
+   - Layanan manajer skin (`SkinManagerService`) untuk memindai skin bawaan dan folder skin kustom pengguna.
+   - Fitur *hot-swap* instan: pemotongan ulang frame ke memori secara dinamis saat skin dipilih dari dropdown Panel Kontrol atau Context Menu tanpa me-restart aplikasi.
+   - Tombol *"Buka Folder Skins"* di Panel Kontrol untuk memudahkan pengguna menambahkan atlas sprite baru.
 
 ## Verifikasi dan kriteria keberhasilan
 
