@@ -295,6 +295,25 @@
                 </StackPanel>
             </GroupBox>
 
+            <!-- Distribusi & Sistem Windows (Tahap 5) -->
+            <GroupBox Header="Distribusi, Multi-Monitor &amp; Sistem (Tahap 5)">
+                <StackPanel>
+                    <CheckBox x:Name="ChkStartWithWindows" Content="Mulai Otomatis bersama Windows (Auto-Start Run)" Click="ChkStartWithWindows_Click"/>
+                    
+                    <Border Background="#181825" CornerRadius="6" Padding="10,8" Margin="0,4,0,6">
+                        <StackPanel>
+                            <TextBlock x:Name="TxtDpiInfo" Text="Resolusi &amp; DPI: 100% (96 DPI) | Mode: PerMonitorV2" FontSize="11" Foreground="#89B4FA"/>
+                            <TextBlock x:Name="TxtMonitorsInfo" Text="Monitor Aktif: 1 Layar Terdeteksi" FontSize="11" Foreground="#A6ADC8" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                        <Button x:Name="BtnRecoverDisplays" Content="Uji Pemulihan Multi-Monitor" Click="BtnRecoverDisplays_Click"/>
+                        <Button x:Name="BtnOpenDataFolder" Content="Buka Folder Data/Pengaturan" Click="BtnOpenDataFolder_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+
             <!-- Scale & Window Controls -->
             <GroupBox Header="Pengaturan Ukuran &amp; Kontrol">
                 <StackPanel>

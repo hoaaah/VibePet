@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using DesktopPet.Models;
 using DesktopPet.Services;
 using DesktopPet.Views;
@@ -22,6 +23,7 @@ public partial class MainWindow : Window
     private readonly ResourceMonitor _resourceMonitor;
     private readonly NamedPipeIpcServer _ipcServer;
     private readonly ProcessWatcherService _processWatcher;
+    private readonly AutoStartService _autoStartService;
     private readonly DispatcherTimer _bubbleDismissTimer;
     private string? _currentBubbleActionCommand;
 
@@ -51,6 +53,7 @@ public partial class MainWindow : Window
         _resourceMonitor = new ResourceMonitor(1000);
         _ipcServer = new NamedPipeIpcServer();
         _processWatcher = new ProcessWatcherService(_settingsService.Settings.WatchedProcesses);
+        _autoStartService = new AutoStartService();
 
         _bubbleDismissTimer = new DispatcherTimer(DispatcherPriority.Background);
         _bubbleDismissTimer.Tick += (s, e) => HideSpeechBubble();
@@ -108,10 +111,15 @@ public partial class MainWindow : Window
         _processWatcher.Start();
 
         // Initialize ControlWindow and TrayManager
-        _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector, _resourceMonitor, _ipcServer, _processWatcher);
+        _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector, _resourceMonitor, _ipcServer, _processWatcher, _autoStartService);
         _trayManager = new TrayIconManager(this, _controlWindow);
 
         _movementManager.Start();
+
+        // Wire Multi-Monitor, Power Management, and DPI Events (Tahap 5)
+        SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+        SystemEvents.PowerModeChanged += OnPowerModeChanged;
+        DpiChanged += OnWindowDpiChanged;
 
         // Start default state evaluation
         _stateMachine.EvaluateState();
@@ -652,7 +660,70 @@ public partial class MainWindow : Window
             }
             _settingsService.Save();
         };
-        MenuBehavior.Items.Add(itemBadges);
+        var itemAutoStart = new MenuItem
+        {
+            Header = "Mulai Otomatis bersama Windows",
+            IsCheckable = true,
+            IsChecked = _autoStartService.IsAutoStartEnabled()
+        };
+        itemAutoStart.Click += (s, e) => SetStartWithWindows(itemAutoStart.IsChecked);
+        MenuBehavior.Items.Add(itemAutoStart);
+    }
+
+    public void SetStartWithWindows(bool val)
+    {
+        _settingsService.Settings.StartWithWindows = val;
+        _autoStartService.SetAutoStart(val);
+        _settingsService.Save();
+    }
+
+    private void OnDisplaySettingsChanged(object? sender, EventArgs e)
+    {
+        Dispatcher.InvokeAsync(ValidateAndReposition);
+    }
+
+    private void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            switch (e.Mode)
+            {
+                case PowerModes.Suspend:
+                    _player.Pause();
+                    _resourceMonitor.Stop();
+                    _processWatcher.Stop();
+                    _activityDetector.Stop();
+                    _movementManager?.CancelMovement();
+                    break;
+
+                case PowerModes.Resume:
+                    _player.Resume();
+                    if (_settingsService.Settings.ResourceMonitoring) _resourceMonitor.Start();
+                    if (_settingsService.Settings.EnableProcessWatcher) _processWatcher.Start();
+                    if (_settingsService.Settings.TypingDetection) _activityDetector.Start();
+                    if (_settingsService.Settings.AutoWander) _movementManager?.Start();
+                    _stateMachine.EvaluateState();
+                    ValidateAndReposition();
+                    break;
+            }
+        });
+    }
+
+    private void OnWindowDpiChanged(object sender, System.Windows.DpiChangedEventArgs e)
+    {
+        ValidateAndReposition();
+    }
+
+    public void ValidateAndReposition()
+    {
+        double targetW = ActualWidth > 0 ? ActualWidth : Width;
+        double targetH = ActualHeight > 0 ? ActualHeight : Height;
+        System.Windows.Point pos = _settingsService.GetValidatedPosition(targetW, targetH);
+        Left = pos.X;
+        Top = pos.Y;
+        _settingsService.Settings.X = Left;
+        _settingsService.Settings.Y = Top;
+        _settingsService.Save();
     }
 
     private void MenuOpenControl_Click(object sender, RoutedEventArgs e)
@@ -676,6 +747,10 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
+        SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
+        SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+        DpiChanged -= OnWindowDpiChanged;
+
         _ipcServer.Dispose();
         _processWatcher.Dispose();
         _resourceMonitor.Dispose();

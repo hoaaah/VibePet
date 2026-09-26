@@ -21,6 +21,7 @@ public partial class ControlWindow : Window
     private readonly ResourceMonitor _resourceMonitor;
     private readonly NamedPipeIpcServer _ipcServer;
     private readonly ProcessWatcherService _processWatcher;
+    private readonly AutoStartService _autoStartService;
     private bool _isPaused = false;
 
     public ControlWindow(
@@ -31,7 +32,8 @@ public partial class ControlWindow : Window
         ActivityDetector activityDetector,
         ResourceMonitor resourceMonitor,
         NamedPipeIpcServer ipcServer,
-        ProcessWatcherService processWatcher)
+        ProcessWatcherService processWatcher,
+        AutoStartService autoStartService)
     {
         InitializeComponent();
         _mainWindow = mainWindow;
@@ -42,6 +44,7 @@ public partial class ControlWindow : Window
         _resourceMonitor = resourceMonitor;
         _ipcServer = ipcServer;
         _processWatcher = processWatcher;
+        _autoStartService = autoStartService;
 
         _player.FrameUpdated += OnPlayerFrameUpdated;
         _player.StateChanged += OnPlayerStateChanged;
@@ -56,6 +59,10 @@ public partial class ControlWindow : Window
         ChkTypingDetection.IsChecked = settings.TypingDetection;
         ChkResourceMonitoring.IsChecked = settings.ResourceMonitoring;
         ChkShowBadges.IsChecked = settings.ShowResourceBadges;
+
+        // Tahap 5: Windows Startup & Display Info
+        ChkStartWithWindows.IsChecked = _autoStartService.IsAutoStartEnabled();
+        UpdateDisplayAndDpiInfo();
 
         // Tahap 4: IPC & Process Watcher Settings
         ChkIpcEnabled.IsChecked = settings.EnableIpc;
@@ -427,6 +434,70 @@ public partial class ControlWindow : Window
     private void BtnExit_Click(object sender, RoutedEventArgs e)
     {
         System.Windows.Application.Current.Shutdown();
+    }
+
+    private void ChkStartWithWindows_Click(object sender, RoutedEventArgs e)
+    {
+        bool enable = ChkStartWithWindows.IsChecked == true;
+        _mainWindow.SetStartWithWindows(enable);
+        ChkStartWithWindows.IsChecked = _autoStartService.IsAutoStartEnabled();
+    }
+
+    private void BtnRecoverDisplays_Click(object sender, RoutedEventArgs e)
+    {
+        _mainWindow.ValidateAndReposition();
+        UpdateDisplayAndDpiInfo();
+        System.Windows.MessageBox.Show(
+            $"Posisi Pet berhasil diselaraskan pada koordinat X={_mainWindow.Left:0}, Y={_mainWindow.Top:0} di area monitor aktif.",
+            "Pemulihan Multi-Monitor",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information
+        );
+    }
+
+    private void BtnOpenDataFolder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            string folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "DesktopPet"
+            );
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = folder,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Gagal membuka folder data: {ex.Message}");
+        }
+    }
+
+    public void UpdateDisplayAndDpiInfo()
+    {
+        try
+        {
+            var dpi = VisualTreeHelper.GetDpi(_mainWindow);
+            double scalePercent = dpi.DpiScaleX * 100.0;
+            TxtDpiInfo.Text = $"Resolusi & DPI: {scalePercent:0}% ({dpi.PixelsPerInchX:0} DPI) | Mode: PerMonitorV2";
+
+            var screens = System.Windows.Forms.Screen.AllScreens;
+            TxtMonitorsInfo.Text = $"Monitor Aktif: {screens.Length} Layar Terdeteksi (Utama: {System.Windows.Forms.Screen.PrimaryScreen?.Bounds.Width}x{System.Windows.Forms.Screen.PrimaryScreen?.Bounds.Height})";
+        }
+        catch
+        {
+            // Ignore UI metric inspection issues
+        }
+    }
+
+    protected override void OnActivated(EventArgs e)
+    {
+        base.OnActivated(e);
+        UpdateDisplayAndDpiInfo();
+        ChkStartWithWindows.IsChecked = _autoStartService.IsAutoStartEnabled();
     }
 
     protected override void OnClosing(CancelEventArgs e)

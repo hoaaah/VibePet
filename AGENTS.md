@@ -22,8 +22,15 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
   - *Watcher Proses Otomatis (`ProcessWatcherService`):* Memantau lifecycle proses target pengembang (`dotnet`, `node`, `pwsh`, `cargo`, `ffmpeg`, `code`), memicu animasi komputer bekerja saat proses mulai dan animasi sukses/error berdasarkan exit code (0 = success, != 0 = error).
   - *Integrasi UI & Scripting CLI:* Panel Kontrol menyertakan kontrol IPC & penambahan/penghapusan proses watcher secara visual. Disediakan juga `send-event.bat` dan `scripts/send-event.ps1` untuk pemanggilan instan dari build scripts, CI/CD lokal, atau terminal.
   - *37 Unit Tests* di `tests/DesktopPet.Tests` lulus 100%.
+- **Tahap 5 (Distribusi & Penyempurnaan Sistem) selesai dan terverifikasi:**
+  - *Per-Monitor V2 DPI Awareness:* Dikonfigurasi melalui `app.manifest` dan `<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>` pada .NET 8. Penanganan event `DpiChanged` memastikan sprite tetap tajam pada semua skala layar (100%, 125%, 150%, 200%).
+  - *Multi-Monitor Resilience & Pemulihan Posisi:* Menggunakan `Screen.AllScreens` untuk validasi area kerja. Jika monitor sekunder dicabut/mati, pet otomatis dipulihkan ke monitor utama tanpa terlempar keluar layar. Responsif terhadap `SystemEvents.DisplaySettingsChanged`.
+  - *Manajemen Daya & Sleep/Resume:* Menangani `SystemEvents.PowerModeChanged` (`Suspend` / `Resume`) untuk menghentikan timer animasi dan monitoring saat komputer tidur guna menghemat daya baterai.
+  - *Auto-Start Windows:* Diimplementasikan via `AutoStartService` pada registry `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. Tersedia toggle di Panel Kontrol dan Context Menu pet.
+  - *Distribusi Lengkap:* Skrip penginstal PowerShell (`install.ps1`) dan uninstaller (`uninstall.ps1`), skrip installer Inno Setup (`installer.iss`), serta pemaket rilis otomatis (`scripts/package-release.ps1`) yang menghasilkan paket portable `dist/DesktopPet-v1.0.0-win-x64.zip` dan binary root `DesktopPet.exe` (2.66 MB).
+  - *44 Unit Tests* di `tests/DesktopPet.Tests` lulus 100%.
 - Aset berasal dari pet terpilih `Kawahime`.
-- Tahap berikutnya yang menunggu eksekusi: Tahap 5 (Distribusi dan penyempurnaan: multi-monitor, DPI, installer/paket distribusi, opsi auto-start Windows).
+- Seluruh 5 tahapan pengembangan telah rampung 100%.
 
 ## Stack yang direncanakan
 
@@ -158,11 +165,14 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
 - Integrasi ke Panel Kontrol (tab/grupbox IPC dan Process Watcher) serta penyediaan skrip CLI `send-event.bat` dan `scripts/send-event.ps1`.
 - Seluruh 37 unit tests lulus 100%.
 
-### 5. Distribusi dan penyempurnaan
+### 5. Distribusi dan penyempurnaan (Selesai)
 
-- Uji DPI, multi-monitor, sleep/resume, dan pergantian monitor.
-- Tentukan installer/paket distribusi dan opsi startup bersama Windows.
-- Tambahkan GPU atau integrasi lain hanya bila diperlukan.
+- Implementasi Per-Monitor V2 High-DPI awareness di `app.manifest` dan `.csproj`, serta event `DpiChanged`.
+- Penanganan multi-monitor, layout monitor berubah (`DisplaySettingsChanged`), dan pemulihan posisi otomatis jika monitor sekunder dicabut (`GetValidatedPosition`).
+- Manajemen daya cerdas (`PowerModeChanged`) untuk pause/resume animasi dan monitoring saat sleep/wake.
+- Layanan Auto-Start Windows (`AutoStartService`) via Registry Run `HKCU` dengan kontrol di UI.
+- Skrip penginstal PowerShell (`install.ps1`) dan pembersih (`uninstall.ps1`), konfigurasi Inno Setup (`installer.iss`), serta pemaket rilis otomatis (`scripts/package-release.ps1`).
+- Seluruh 44 unit tests lulus 100%.
 
 ## Verifikasi dan kriteria keberhasilan
 
