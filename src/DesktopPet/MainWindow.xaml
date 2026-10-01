@@ -1,6 +1,7 @@
 <Window x:Class="DesktopPet.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:DesktopPet.Localization"
         Title="DesktopPet"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -13,19 +14,20 @@
         Closing="Window_Closing">
     <Window.ContextMenu>
         <ContextMenu x:Name="PetContextMenu">
-            <MenuItem Header="Animasi" x:Name="MenuAnimations"/>
-            <MenuItem Header="Arah Pandang" x:Name="MenuGaze"/>
-            <MenuItem Header="Ukuran Pet" x:Name="MenuScale"/>
-            <MenuItem Header="Skin" x:Name="MenuSkins" SubmenuOpened="MenuSkins_SubmenuOpened">
+            <MenuItem Header="{l:Tr Menu_Animations}" x:Name="MenuAnimations"/>
+            <MenuItem Header="{l:Tr Menu_Gaze}" x:Name="MenuGaze"/>
+            <MenuItem Header="{l:Tr Menu_Scale}" x:Name="MenuScale"/>
+            <MenuItem Header="{l:Tr Menu_Skin}" x:Name="MenuSkins" SubmenuOpened="MenuSkins_SubmenuOpened">
                 <!-- Placeholder so the submenu arrow shows; rebuilt from the Skins folder on open -->
-                <MenuItem Header="Memuat..." IsEnabled="False"/>
+                <MenuItem Header="{l:Tr Menu_Loading}" IsEnabled="False"/>
             </MenuItem>
-            <MenuItem Header="Opsi Perilaku" x:Name="MenuBehavior"/>
+            <MenuItem Header="{l:Tr Menu_Behavior}" x:Name="MenuBehavior"/>
+            <MenuItem Header="{l:Tr Menu_Language}" x:Name="MenuLanguage"/>
             <Separator/>
-            <MenuItem Header="Panel Kontrol &amp; Tester..." Click="MenuOpenControl_Click"/>
-            <MenuItem Header="Reset Posisi" Click="MenuResetPos_Click"/>
+            <MenuItem Header="{l:Tr Menu_ControlPanel}" Click="MenuOpenControl_Click"/>
+            <MenuItem Header="{l:Tr Menu_ResetPosition}" Click="MenuResetPos_Click"/>
             <Separator/>
-            <MenuItem Header="Keluar" Click="MenuExit_Click"/>
+            <MenuItem Header="{l:Tr Menu_Exit}" Click="MenuExit_Click"/>
         </ContextMenu>
     </Window.ContextMenu>
 
@@ -54,14 +56,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock x:Name="TxtBubbleTitle" Text="Notifikasi" FontWeight="Bold" FontSize="11" Foreground="#89B4FA"/>
+                            <TextBlock x:Name="TxtBubbleTitle" Text="{l:Tr Bubble_DefaultTitle}" FontWeight="Bold" FontSize="11" Foreground="#89B4FA"/>
                             <TextBlock Grid.Column="1" Text="✕" FontSize="10" Foreground="#6C7086" Cursor="Hand" Margin="6,0,0,0"
                                        MouseLeftButtonDown="BtnCloseBubble_Click"/>
                         </Grid>
                         <!-- Bubble Body -->
-                        <TextBlock x:Name="TxtBubbleMessage" Text="Pesan notifikasi..." TextWrapping="Wrap" FontSize="11" Foreground="#CDD6F4" Margin="0,2,0,4"/>
+                        <TextBlock x:Name="TxtBubbleMessage" Text="{l:Tr Bubble_DefaultMessage}" TextWrapping="Wrap" FontSize="11" Foreground="#CDD6F4" Margin="0,2,0,4"/>
                         <!-- Action Button -->
-                        <Button x:Name="BtnBubbleAction" Content="Tindak Lanjuti" Visibility="Collapsed"
+                        <Button x:Name="BtnBubbleAction" Content="{l:Tr Bubble_DefaultAction}" Visibility="Collapsed"
                                 Padding="8,3" FontSize="10" Background="#313244" Foreground="#89B4FA"
                                 BorderBrush="#45475A" BorderThickness="1" HorizontalAlignment="Right"
                                 Cursor="Hand" Click="BtnBubbleAction_Click"/>

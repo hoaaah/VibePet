@@ -1,7 +1,8 @@
 <Window x:Class="DesktopPet.Views.ControlWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Desktop Pet — Panel Kontrol &amp; Tester"
+        xmlns:l="clr-namespace:DesktopPet.Localization"
+        Title="{l:Tr Ctl_WindowTitle}"
         Height="780" Width="480"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResizeWithGrip"
@@ -65,12 +66,12 @@
                 <StackPanel>
                     <TextBlock Text="Kawahime Desktop Pet" FontSize="16" FontWeight="Bold" Foreground="#89B4FA"/>
                     <TextBlock x:Name="TxtStatus" Text="Status: Idle (Frame 0/6)" Margin="0,4,0,0" Foreground="#A6ADC8" FontSize="12"/>
-                    <TextBlock x:Name="TxtPriority" Text="Prioritas Aktif: Idle" Margin="0,2,0,0" Foreground="#F9E2AF" FontSize="11"/>
+                    <TextBlock x:Name="TxtPriority" Text="{l:Tr Ctl_PriorityInitial}" Margin="0,2,0,0" Foreground="#F9E2AF" FontSize="11"/>
                 </StackPanel>
             </Border>
 
             <!-- Resource Monitoring & Live Overhead (Tahap 3) -->
-            <GroupBox Header="Resource Komputer &amp; Overhead (Tahap 3)">
+            <GroupBox Header="{l:Tr Ctl_ResourceGroup}">
                 <StackPanel>
                     <!-- System CPU -->
                     <Grid Margin="0,2">
@@ -78,7 +79,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Beban CPU Sistem:" FontSize="11" Foreground="#A6ADC8"/>
+                        <TextBlock Text="{l:Tr Ctl_SystemCpu}" FontSize="11" Foreground="#A6ADC8"/>
                         <TextBlock x:Name="TxtLiveCpu" Grid.Column="1" Text="0.0%" FontSize="11" FontWeight="Bold" Foreground="#89B4FA"/>
                     </Grid>
                     <ProgressBar x:Name="PbCpu" Minimum="0" Maximum="100" Value="0" Margin="0,2,0,6"/>
@@ -89,7 +90,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Penggunaan RAM Sistem:" FontSize="11" Foreground="#A6ADC8"/>
+                        <TextBlock Text="{l:Tr Ctl_SystemRam}" FontSize="11" Foreground="#A6ADC8"/>
                         <TextBlock x:Name="TxtLiveRam" Grid.Column="1" Text="0.0% (0.0 / 0.0 GB)" FontSize="11" FontWeight="Bold" Foreground="#FAB387"/>
                     </Grid>
                     <ProgressBar x:Name="PbRam" Minimum="0" Maximum="100" Value="0" Margin="0,2,0,6" Foreground="#FAB387"/>
@@ -106,7 +107,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Ambang CPU Tinggi:" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Text="{l:Tr Ctl_CpuThreshold}" FontSize="11" VerticalAlignment="Center"/>
                         <Slider x:Name="SliderCpuThreshold" Grid.Column="1" Minimum="40" Maximum="95" Value="80"
                                 ValueChanged="SliderCpuThreshold_ValueChanged" Margin="8,0"/>
                         <TextBlock x:Name="TxtCpuThresholdVal" Grid.Column="2" Text="80%" FontSize="11" FontWeight="Bold"/>
@@ -117,41 +118,41 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Ambang RAM Tinggi:" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Text="{l:Tr Ctl_RamThreshold}" FontSize="11" VerticalAlignment="Center"/>
                         <Slider x:Name="SliderRamThreshold" Grid.Column="1" Minimum="40" Maximum="95" Value="85"
                                 ValueChanged="SliderRamThreshold_ValueChanged" Margin="8,0"/>
                         <TextBlock x:Name="TxtRamThresholdVal" Grid.Column="2" Text="85%" FontSize="11" FontWeight="Bold"/>
                     </Grid>
 
                     <!-- Resource Simulations -->
-                    <TextBlock Text="Simulasi Beban Sistem:" FontSize="11" Foreground="#A6ADC8" Margin="0,6,0,2"/>
+                    <TextBlock Text="{l:Tr Ctl_LoadSimulation}" FontSize="11" Foreground="#A6ADC8" Margin="0,6,0,2"/>
                     <WrapPanel Orientation="Horizontal">
-                        <Button Content="🔥 Simulasikan CPU Tinggi (92%)" Click="BtnSimulateHighCpu_Click" Width="205"/>
-                        <Button Content="⚡ Simulasikan RAM Penuh (88%)" Click="BtnSimulateHighRam_Click" Width="205"/>
+                        <Button Content="{l:Tr Ctl_SimHighCpu}" Click="BtnSimulateHighCpu_Click" Width="205"/>
+                        <Button Content="{l:Tr Ctl_SimHighRam}" Click="BtnSimulateHighRam_Click" Width="205"/>
                     </WrapPanel>
-                    <Button Content="Normalkan Beban Sistem" Background="#45475A" Click="BtnNormalizeResource_Click" Margin="3,4,3,0"/>
+                    <Button Content="{l:Tr Ctl_NormalizeLoad}" Background="#45475A" Click="BtnNormalizeResource_Click" Margin="3,4,3,0"/>
                 </StackPanel>
             </GroupBox>
 
             <!-- State Machine & Event Simulation -->
-            <GroupBox Header="Simulasi Event &amp; Prioritas (Tahap 2)">
+            <GroupBox Header="{l:Tr Ctl_EventGroup}">
                 <StackPanel>
-                    <TextBlock Text="Uji respon hierarki prioritas state machine:" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,4"/>
-                    <CheckBox x:Name="ChkSimError" Content="Simulasikan Error (Failed - Prioritas Tinggi)" Click="ChkSimError_Click"/>
-                    <CheckBox x:Name="ChkSimWaiting" Content="Simulasikan Butuh Respons (Waiting)" Click="ChkSimWaiting_Click"/>
-                    <CheckBox x:Name="ChkSimWork" Content="Simulasikan Kerja Komputer (Running)" Click="ChkSimWork_Click"/>
+                    <TextBlock Text="{l:Tr Ctl_EventHint}" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,4"/>
+                    <CheckBox x:Name="ChkSimError" Content="{l:Tr Ctl_SimError}" Click="ChkSimError_Click"/>
+                    <CheckBox x:Name="ChkSimWaiting" Content="{l:Tr Ctl_SimWaiting}" Click="ChkSimWaiting_Click"/>
+                    <CheckBox x:Name="ChkSimWork" Content="{l:Tr Ctl_SimWork}" Click="ChkSimWork_Click"/>
                     <WrapPanel Orientation="Horizontal" Margin="0,6,0,0">
-                        <Button Content="Kirim Notifikasi (Waving 1x)" Click="BtnSimNotification_Click" Width="205"/>
-                        <Button Content="Tugas Selesai (Jumping 1x)" Click="BtnSimSuccess_Click" Width="205"/>
+                        <Button Content="{l:Tr Ctl_SimNotification}" Click="BtnSimNotification_Click" Width="205"/>
+                        <Button Content="{l:Tr Ctl_SimSuccess}" Click="BtnSimSuccess_Click" Width="205"/>
                     </WrapPanel>
-                    <Button Content="Reset Semua Simulasi Event" Background="#45475A" Click="BtnResetSimulations_Click" Margin="3,6,3,0"/>
+                    <Button Content="{l:Tr Ctl_ResetSimulations}" Background="#45475A" Click="BtnResetSimulations_Click" Margin="3,6,3,0"/>
                 </StackPanel>
             </GroupBox>
 
             <!-- Integrasi Aplikasi & IPC Named Pipe (Tahap 4) -->
-            <GroupBox Header="Integrasi Aplikasi &amp; IPC Named Pipe (Tahap 4)">
+            <GroupBox Header="{l:Tr Ctl_IpcGroup}">
                 <StackPanel>
-                    <TextBlock Text="Komunikasi antar-proses (IPC) Named Pipe untuk event build, test, error, dan notifikasi:" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                    <TextBlock Text="{l:Tr Ctl_IpcHint}" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,6" TextWrapping="Wrap"/>
 
                     <!-- IPC Toggle & Status -->
                     <Grid Margin="0,2">
@@ -159,8 +160,8 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <CheckBox x:Name="ChkIpcEnabled" Content="Server Named Pipe (\\.\pipe\DesktopPetIpc)" Click="ChkIpcEnabled_Click" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TxtIpcStatus" Grid.Column="1" Text="Aktif" FontSize="11" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="ChkIpcEnabled" Content="{l:Tr Ctl_IpcServer}" Click="ChkIpcEnabled_Click" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtIpcStatus" Grid.Column="1" Text="" FontSize="11" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Event Type Selector -->
@@ -169,23 +170,23 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Tipe Event:" FontSize="11" Foreground="#A6ADC8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{l:Tr Ctl_EventType}" FontSize="11" Foreground="#A6ADC8" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox x:Name="CmbEventType" Grid.Column="1" Background="#313244" Foreground="#11111B" BorderBrush="#45475A">
-                            <ComboBoxItem Content="start (Pekerjaan Dimulai - Running)" Tag="start"/>
-                            <ComboBoxItem Content="success (Pekerjaan Selesai - Jumping)" IsSelected="True" Tag="success"/>
-                            <ComboBoxItem Content="error (Proses Gagal - Failed)" Tag="error"/>
-                            <ComboBoxItem Content="needs_action (Butuh Tindakan - Waiting)" Tag="needs_action"/>
-                            <ComboBoxItem Content="notify (Notifikasi Info - Waving)" Tag="notify"/>
-                            <ComboBoxItem Content="clear (Bersihkan Balon &amp; Reset)" Tag="clear"/>
+                            <ComboBoxItem Content="{l:Tr Ctl_EventStart}" Tag="start"/>
+                            <ComboBoxItem Content="{l:Tr Ctl_EventSuccess}" IsSelected="True" Tag="success"/>
+                            <ComboBoxItem Content="{l:Tr Ctl_EventError}" Tag="error"/>
+                            <ComboBoxItem Content="{l:Tr Ctl_EventNeedsAction}" Tag="needs_action"/>
+                            <ComboBoxItem Content="{l:Tr Ctl_EventNotify}" Tag="notify"/>
+                            <ComboBoxItem Content="{l:Tr Ctl_EventClear}" Tag="clear"/>
                         </ComboBox>
                     </Grid>
 
-                    <!-- Title & Message TextBoxes -->
-                    <TextBlock Text="Judul Notifikasi:" FontSize="11" Foreground="#A6ADC8" Margin="0,4,0,1"/>
-                    <TextBox x:Name="TxtIpcTitle" Text="Build Berhasil" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
+                    <!-- Title & Message TextBoxes (sample values are set in code, then belong to the user) -->
+                    <TextBlock Text="{l:Tr Ctl_NotificationTitle}" FontSize="11" Foreground="#A6ADC8" Margin="0,4,0,1"/>
+                    <TextBox x:Name="TxtIpcTitle" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
 
-                    <TextBlock Text="Pesan Notifikasi / Balon:" FontSize="11" Foreground="#A6ADC8" Margin="0,4,0,1"/>
-                    <TextBox x:Name="TxtIpcMessage" Text="Kompilasi proyek DesktopPet selesai dalam 1.2 detik." Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
+                    <TextBlock Text="{l:Tr Ctl_NotificationMessage}" FontSize="11" Foreground="#A6ADC8" Margin="0,4,0,1"/>
+                    <TextBox x:Name="TxtIpcMessage" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
 
                     <Grid Margin="0,4,0,2">
                         <Grid.ColumnDefinitions>
@@ -193,16 +194,16 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,3,0">
-                            <TextBlock Text="Tombol Aksi (Opsional):" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,1"/>
-                            <TextBox x:Name="TxtIpcActionLabel" Text="Lihat Hasil" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
+                            <TextBlock Text="{l:Tr Ctl_ActionButton}" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,1"/>
+                            <TextBox x:Name="TxtIpcActionLabel" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="3,0,0,0">
-                            <TextBlock Text="Durasi Balon (detik, 0=tetap):" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,1"/>
+                            <TextBlock Text="{l:Tr Ctl_BubbleDuration}" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,1"/>
                             <TextBox x:Name="TxtIpcTimeout" Text="5" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3"/>
                         </StackPanel>
                     </Grid>
 
-                    <Button x:Name="BtnSendIpcEvent" Content="🚀 Kirim Event IPC (Simulasi Client Pipe)" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold" Margin="0,6,0,2" Click="BtnSendIpcEvent_Click"/>
+                    <Button x:Name="BtnSendIpcEvent" Content="{l:Tr Ctl_SendIpc}" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold" Margin="0,6,0,2" Click="BtnSendIpcEvent_Click"/>
                     <TextBlock x:Name="TxtIpcResult" Text="" FontSize="11" Foreground="#A6E3A1" Margin="0,2,0,6" TextWrapping="Wrap"/>
 
                     <!-- Process Watcher Section -->
@@ -213,10 +214,10 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <CheckBox x:Name="ChkProcessWatcher" Content="Pantau Proses Otomatis (Process Watcher)" Click="ChkProcessWatcher_Click" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="TxtWatcherStatus" Grid.Column="1" Text="Aktif" FontSize="11" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center"/>
+                                <CheckBox x:Name="ChkProcessWatcher" Content="{l:Tr Ctl_ProcessWatcher}" Click="ChkProcessWatcher_Click" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtWatcherStatus" Grid.Column="1" Text="" FontSize="11" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center"/>
                             </Grid>
-                            <TextBlock Text="Daftar proses target yang dipantau (start &amp; exit code):" FontSize="11" Foreground="#A6ADC8" Margin="0,2,0,4"/>
+                            <TextBlock Text="{l:Tr Ctl_WatchedList}" FontSize="11" Foreground="#A6ADC8" Margin="0,2,0,4"/>
                             
                             <ListBox x:Name="LstWatchedProcesses" Height="75" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A"/>
 
@@ -227,8 +228,8 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox x:Name="TxtNewProcessName" Text="cargo" Background="#181825" Foreground="#CDD6F4" BorderBrush="#45475A" Padding="6,3" VerticalAlignment="Center"/>
-                                <Button Grid.Column="1" Content="Tambah" Width="70" Click="BtnAddProcess_Click" Margin="4,0,2,0"/>
-                                <Button Grid.Column="2" Content="Hapus" Width="70" Click="BtnRemoveProcess_Click" Margin="2,0,0,0"/>
+                                <Button Grid.Column="1" Content="{l:Tr Ctl_Add}" MinWidth="70" Click="BtnAddProcess_Click" Margin="4,0,2,0"/>
+                                <Button Grid.Column="2" Content="{l:Tr Ctl_Remove}" MinWidth="70" Click="BtnRemoveProcess_Click" Margin="2,0,0,0"/>
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -236,105 +237,115 @@
             </GroupBox>
 
             <!-- 9 Main Animations Manual Tester -->
-            <GroupBox Header="9 Animasi Utama (Manual Test — Terkunci dari Gaze)">
+            <GroupBox Header="{l:Tr Ctl_AnimGroup}">
                 <StackPanel>
-                    <TextBlock Text="Klik salah satu animasi di bawah untuk memutarnya terus-menerus:" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,4"/>
+                    <TextBlock Text="{l:Tr Ctl_AnimHint}" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,4"/>
                     <WrapPanel Orientation="Horizontal" ItemWidth="205">
-                        <Button Content="0. Idle (Diam Berdiri)" Click="BtnIdle_Click"/>
-                        <Button Content="1. Berlari ke Kanan" Click="BtnRunRight_Click" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold"/>
-                        <Button Content="2. Berlari ke Kiri" Click="BtnRunLeft_Click" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold"/>
-                        <Button Content="3. Waving (Lambaikan Tangan)" Click="BtnWaving_Click"/>
-                        <Button Content="4. Jumping (Melompat Ceria)" Click="BtnJumping_Click"/>
-                        <Button Content="5. Failed (Sedih / Error)" Click="BtnFailed_Click"/>
-                        <Button Content="6. Waiting (Bertanya / Menunggu)" Click="BtnWaiting_Click"/>
-                        <Button Content="7. PC Task Running (Semangat)" Click="BtnRunWork_Click"/>
-                        <Button Content="8. Review (Mengetik Aktif)" Click="BtnReview_Click"/>
+                        <Button Content="{l:Tr Ctl_Anim0}" Click="BtnIdle_Click"/>
+                        <Button Content="{l:Tr Ctl_Anim1}" Click="BtnRunRight_Click" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold"/>
+                        <Button Content="{l:Tr Ctl_Anim2}" Click="BtnRunLeft_Click" Background="#89B4FA" Foreground="#11111B" FontWeight="Bold"/>
+                        <Button Content="{l:Tr Ctl_Anim3}" Click="BtnWaving_Click"/>
+                        <Button Content="{l:Tr Ctl_Anim4}" Click="BtnJumping_Click"/>
+                        <Button Content="{l:Tr Ctl_Anim5}" Click="BtnFailed_Click"/>
+                        <Button Content="{l:Tr Ctl_Anim6}" Click="BtnWaiting_Click"/>
+                        <Button Content="{l:Tr Ctl_Anim7}" Click="BtnRunWork_Click"/>
+                        <Button Content="{l:Tr Ctl_Anim8}" Click="BtnReview_Click"/>
                     </WrapPanel>
-                    <Button Content="▶️ Kembali ke Mode Otomatis (State Machine)" Background="#A6E3A1" Foreground="#11111B" FontWeight="Bold" Click="BtnResumeAuto_Click" Margin="3,8,3,2"/>
+                    <Button Content="{l:Tr Ctl_ResumeAuto}" Background="#A6E3A1" Foreground="#11111B" FontWeight="Bold" Click="BtnResumeAuto_Click" Margin="3,8,3,2"/>
                 </StackPanel>
             </GroupBox>
 
             <!-- 16 Gaze Poses Manual Tester -->
-            <GroupBox Header="16 Arah Pandang (Manual Test)">
+            <GroupBox Header="{l:Tr Ctl_GazeGroup}">
                 <StackPanel>
-                    <TextBlock Text="Baris 9: 0° s/d 157.5°" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,2"/>
+                    <TextBlock Text="{l:Tr Ctl_GazeRow9}" FontSize="11" Foreground="#A6ADC8" Margin="4,0,0,2"/>
                     <WrapPanel Orientation="Horizontal" ItemWidth="102">
-                        <Button Content="0° (Atas)" Click="BtnGaze_Click" Tag="0"/>
+                        <Button Content="{l:Tr Ctl_Gaze0}" Click="BtnGaze_Click" Tag="0"/>
                         <Button Content="22.5°" Click="BtnGaze_Click" Tag="1"/>
-                        <Button Content="45° (Ka-Atas)" Click="BtnGaze_Click" Tag="2"/>
+                        <Button Content="{l:Tr Ctl_Gaze45}" Click="BtnGaze_Click" Tag="2"/>
                         <Button Content="67.5°" Click="BtnGaze_Click" Tag="3"/>
-                        <Button Content="90° (Kanan)" Click="BtnGaze_Click" Tag="4"/>
+                        <Button Content="{l:Tr Ctl_Gaze90}" Click="BtnGaze_Click" Tag="4"/>
                         <Button Content="112.5°" Click="BtnGaze_Click" Tag="5"/>
-                        <Button Content="135° (Ka-Bwh)" Click="BtnGaze_Click" Tag="6"/>
+                        <Button Content="{l:Tr Ctl_Gaze135}" Click="BtnGaze_Click" Tag="6"/>
                         <Button Content="157.5°" Click="BtnGaze_Click" Tag="7"/>
                     </WrapPanel>
 
-                    <TextBlock Text="Baris 10: 180° s/d 337.5°" FontSize="11" Foreground="#A6ADC8" Margin="4,6,0,2"/>
+                    <TextBlock Text="{l:Tr Ctl_GazeRow10}" FontSize="11" Foreground="#A6ADC8" Margin="4,6,0,2"/>
                     <WrapPanel Orientation="Horizontal" ItemWidth="102">
-                        <Button Content="180° (Bawah)" Click="BtnGaze_Click" Tag="8"/>
+                        <Button Content="{l:Tr Ctl_Gaze180}" Click="BtnGaze_Click" Tag="8"/>
                         <Button Content="202.5°" Click="BtnGaze_Click" Tag="9"/>
-                        <Button Content="225° (Ki-Bwh)" Click="BtnGaze_Click" Tag="10"/>
+                        <Button Content="{l:Tr Ctl_Gaze225}" Click="BtnGaze_Click" Tag="10"/>
                         <Button Content="247.5°" Click="BtnGaze_Click" Tag="11"/>
-                        <Button Content="270° (Kiri)" Click="BtnGaze_Click" Tag="12"/>
+                        <Button Content="{l:Tr Ctl_Gaze270}" Click="BtnGaze_Click" Tag="12"/>
                         <Button Content="292.5°" Click="BtnGaze_Click" Tag="13"/>
-                        <Button Content="315° (Ki-Atas)" Click="BtnGaze_Click" Tag="14"/>
+                        <Button Content="{l:Tr Ctl_Gaze315}" Click="BtnGaze_Click" Tag="14"/>
                         <Button Content="337.5°" Click="BtnGaze_Click" Tag="15"/>
                     </WrapPanel>
                 </StackPanel>
             </GroupBox>
 
             <!-- Skins / Sprite Packs (Tahap 6.4) -->
-            <GroupBox Header="Skin / Paket Sprite">
+            <GroupBox Header="{l:Tr Ctl_SkinGroup}">
                 <StackPanel>
                     <ComboBox x:Name="CmbSkins" DisplayMemberPath="ListLabel"
                               Background="#313244" Foreground="#11111B" BorderBrush="#45475A" Margin="3"
                               SelectionChanged="CmbSkins_SelectionChanged"/>
                     <TextBlock x:Name="TxtSkinStatus" Text="" TextWrapping="Wrap" FontSize="11" Foreground="#A6ADC8" Margin="4,2,4,4"/>
                     <WrapPanel>
-                        <Button Content="Buka Folder Skins" Click="BtnOpenSkinsFolder_Click"/>
-                        <Button Content="Muat Ulang Daftar" Click="BtnReloadSkins_Click"/>
+                        <Button Content="{l:Tr Ctl_OpenSkinsFolder}" Click="BtnOpenSkinsFolder_Click"/>
+                        <Button Content="{l:Tr Ctl_ReloadSkins}" Click="BtnReloadSkins_Click"/>
                     </WrapPanel>
                 </StackPanel>
             </GroupBox>
 
             <!-- Behavioral Settings -->
-            <GroupBox Header="Opsi Perilaku &amp; Aksesibilitas">
+            <GroupBox Header="{l:Tr Ctl_BehaviorGroup}">
                 <StackPanel>
-                    <CheckBox x:Name="ChkReducedMotion" Content="Reduced Motion (Tanpa lari/perpindahan: wander, drag, kerja bolak-balik)" Click="ChkReducedMotion_Click"/>
-                    <CheckBox x:Name="ChkAutoWander" Content="Auto Wander (Pet sesekali jalan-jalan otomatis)" Click="ChkAutoWander_Click"/>
-                    <TextBlock Text="Gaya animasi saat komputer bekerja:" Margin="0,6,0,2"/>
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr Ctl_Language}" VerticalAlignment="Center" Margin="6,0,8,0"/>
+                        <ComboBox x:Name="CmbLanguage" Grid.Column="1" DisplayMemberPath="Label"
+                                  Background="#313244" Foreground="#11111B" BorderBrush="#45475A"
+                                  SelectionChanged="CmbLanguage_SelectionChanged"/>
+                    </Grid>
+                    <CheckBox x:Name="ChkReducedMotion" Content="{l:Tr Ctl_ReducedMotion}" Click="ChkReducedMotion_Click"/>
+                    <CheckBox x:Name="ChkAutoWander" Content="{l:Tr Ctl_AutoWander}" Click="ChkAutoWander_Click"/>
+                    <TextBlock Text="{l:Tr Ctl_WorkStyleLabel}" Margin="0,6,0,2"/>
                     <StackPanel Orientation="Horizontal" Margin="12,0,0,4">
-                        <RadioButton x:Name="RbWorkStatic" GroupName="WorkStyle" Content="Statis di tempat" Margin="0,0,16,0" Click="RbWorkStyle_Click"/>
-                        <RadioButton x:Name="RbWorkPacing" GroupName="WorkStyle" Content="Berlari bolak-balik" Click="RbWorkStyle_Click"/>
+                        <RadioButton x:Name="RbWorkStatic" GroupName="WorkStyle" Content="{l:Tr Ctl_WorkStatic}" Margin="0,0,16,0" Click="RbWorkStyle_Click"/>
+                        <RadioButton x:Name="RbWorkPacing" GroupName="WorkStyle" Content="{l:Tr Ctl_WorkPacing}" Click="RbWorkStyle_Click"/>
                     </StackPanel>
-                    <CheckBox x:Name="ChkGazeTracking" Content="Gaze Tracking (Arah pandang ikuti mouse saat netral)" Click="ChkGazeTracking_Click"/>
-                    <CheckBox x:Name="ChkTypingDetection" Content="Deteksi Mengetik (Mengetik memicu Review)" Click="ChkTypingDetection_Click"/>
-                    <CheckBox x:Name="ChkResourceMonitoring" Content="Resource Monitoring Aktif (CPU &amp; RAM Sampling)" Click="ChkResourceMonitoring_Click"/>
-                    <CheckBox x:Name="ChkShowBadges" Content="Tampilkan Indikator Beban (Keringat / Badge)" Click="ChkShowBadges_Click"/>
+                    <CheckBox x:Name="ChkGazeTracking" Content="{l:Tr Ctl_GazeTracking}" Click="ChkGazeTracking_Click"/>
+                    <CheckBox x:Name="ChkTypingDetection" Content="{l:Tr Ctl_TypingDetection}" Click="ChkTypingDetection_Click"/>
+                    <CheckBox x:Name="ChkResourceMonitoring" Content="{l:Tr Ctl_ResourceMonitoring}" Click="ChkResourceMonitoring_Click"/>
+                    <CheckBox x:Name="ChkShowBadges" Content="{l:Tr Ctl_ShowBadges}" Click="ChkShowBadges_Click"/>
                 </StackPanel>
             </GroupBox>
 
             <!-- Distribusi & Sistem Windows (Tahap 5) -->
-            <GroupBox Header="Distribusi, Multi-Monitor &amp; Sistem (Tahap 5)">
+            <GroupBox Header="{l:Tr Ctl_SystemGroup}">
                 <StackPanel>
-                    <CheckBox x:Name="ChkStartWithWindows" Content="Mulai Otomatis bersama Windows (Auto-Start Run)" Click="ChkStartWithWindows_Click"/>
-                    
+                    <CheckBox x:Name="ChkStartWithWindows" Content="{l:Tr Ctl_StartWithWindows}" Click="ChkStartWithWindows_Click"/>
+
                     <Border Background="#181825" CornerRadius="6" Padding="10,8" Margin="0,4,0,6">
                         <StackPanel>
-                            <TextBlock x:Name="TxtDpiInfo" Text="Resolusi &amp; DPI: 100% (96 DPI) | Mode: PerMonitorV2" FontSize="11" Foreground="#89B4FA"/>
-                            <TextBlock x:Name="TxtMonitorsInfo" Text="Monitor Aktif: 1 Layar Terdeteksi" FontSize="11" Foreground="#A6ADC8" Margin="0,3,0,0"/>
+                            <TextBlock x:Name="TxtDpiInfo" Text="" FontSize="11" Foreground="#89B4FA"/>
+                            <TextBlock x:Name="TxtMonitorsInfo" Text="" FontSize="11" Foreground="#A6ADC8" Margin="0,3,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                        <Button x:Name="BtnRecoverDisplays" Content="Uji Pemulihan Multi-Monitor" Click="BtnRecoverDisplays_Click"/>
-                        <Button x:Name="BtnOpenDataFolder" Content="Buka Folder Data/Pengaturan" Click="BtnOpenDataFolder_Click"/>
-                    </StackPanel>
+                    <WrapPanel Orientation="Horizontal" Margin="0,2,0,0">
+                        <Button x:Name="BtnRecoverDisplays" Content="{l:Tr Ctl_RecoverDisplays}" Click="BtnRecoverDisplays_Click"/>
+                        <Button x:Name="BtnOpenDataFolder" Content="{l:Tr Ctl_OpenDataFolder}" Click="BtnOpenDataFolder_Click"/>
+                    </WrapPanel>
                 </StackPanel>
             </GroupBox>
 
             <!-- Scale & Window Controls -->
-            <GroupBox Header="Pengaturan Ukuran &amp; Kontrol">
+            <GroupBox Header="{l:Tr Ctl_SizeGroup}">
                 <StackPanel>
                     <Grid Margin="0,4">
                         <Grid.ColumnDefinitions>
@@ -342,19 +353,19 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Skala: " VerticalAlignment="Center"/>
+                        <TextBlock Text="{l:Tr Ctl_Scale}" VerticalAlignment="Center"/>
                         <Slider x:Name="SliderScale" Grid.Column="1" Minimum="0.5" Maximum="2.5" Value="1.0"
                                 SmallChange="0.25" LargeChange="0.5" TickFrequency="0.25" IsSnapToTickEnabled="True"
                                 ValueChanged="SliderScale_ValueChanged" Margin="8,0"/>
                         <TextBlock x:Name="TxtScaleValue" Grid.Column="2" Text="1.0x" VerticalAlignment="Center" FontWeight="Bold"/>
                     </Grid>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
-                        <Button x:Name="BtnPauseResume" Content="Pause" Width="90" Click="BtnPauseResume_Click"/>
-                        <Button Content="Jalan ke Kanan" Width="100" Click="BtnMoveRight_Click"/>
-                        <Button Content="Jalan ke Kiri" Width="100" Click="BtnMoveLeft_Click"/>
-                        <Button Content="Reset Posisi" Width="90" Click="BtnResetPos_Click"/>
+                        <Button x:Name="BtnPauseResume" Content="Pause" MinWidth="90" Click="BtnPauseResume_Click"/>
+                        <Button Content="{l:Tr Ctl_WalkRight}" MinWidth="100" Click="BtnMoveRight_Click"/>
+                        <Button Content="{l:Tr Ctl_WalkLeft}" MinWidth="100" Click="BtnMoveLeft_Click"/>
+                        <Button Content="{l:Tr Menu_ResetPosition}" MinWidth="90" Click="BtnResetPos_Click"/>
                     </StackPanel>
-                    <Button Content="Tutup Aplikasi Desktop Pet" Margin="0,8,0,0" Background="#F38BA8" Foreground="#11111B" FontWeight="Bold" Click="BtnExit_Click"/>
+                    <Button Content="{l:Tr Ctl_ExitApp}" Margin="0,8,0,0" Background="#F38BA8" Foreground="#11111B" FontWeight="Bold" Click="BtnExit_Click"/>
                 </StackPanel>
             </GroupBox>
         </StackPanel>

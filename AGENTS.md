@@ -36,6 +36,7 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
   2. *Interactive Drag Movement (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Animasi berlari ke kiri (`RunningLeft`) atau kanan (`RunningRight`) mengikuti arah seretan, pose ditahan saat kursor diam 180 ms, menghormati `ReducedMotion`, disusul `Jumping` setelah dilepas. 104 unit tests lulus 100%.
   3. *Animasi Kerja Dinamis (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Saat ComputerWork, pet berlari bolak-balik ±70 DIP di sekitar posisinya (toggle *Statis* / *Bolak-balik* di Panel Kontrol & context menu, default bolak-balik). Status kerja kini gabungan sumber terpisah (CPU, IPC, proses, simulasi); proses hanya dihitung bekerja bila tool CLI/build/agent yang dipantau sedang memakai CPU. 125 unit tests lulus 100%.
   4. *Multi-Skin / Sprite Packs System (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Skin PNG RGBA dari `%AppData%\DesktopPet\Skins\<id>\` (`spritesheet.png` + `skin.json` opsional) dengan *hot-swap* dari Panel Kontrol & context menu tanpa restart. Skrip `scripts/import-codex-pet.ps1` mengonversi pet Codex (WebP) ke PNG. 147 unit tests lulus 100%.
+- **Multi-bahasa (Diimplementasikan, unit test lulus; belum diverifikasi visual):** UI aplikasi tersedia dalam bahasa Inggris dan Indonesia, default mengikuti bahasa tampilan Windows, dan bisa diganti tanpa restart dari Panel Kontrol atau menu klik kanan → Bahasa. Cakupan: aplikasi saja (skrip PowerShell dan installer belum). 160 unit tests lulus 100%. Detail di section "Lokalisasi".
 
 ## Stack yang direncanakan
 
@@ -233,6 +234,17 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
      - UI: GroupBox "Skin / Paket Sprite" di Panel Kontrol (dropdown, status ukuran sel/peringatan/error, Buka Folder Skins, Muat Ulang Daftar) dan submenu "Skin" di context menu (dipindai ulang setiap dibuka).
      - `scripts/import-codex-pet.ps1`: tanpa `-Name` menampilkan pet di `~/.codex/pets`; dengan `-Name` mengonversi WebP → PNG RGBA memakai `dwebp`/`magick`/`ffmpeg`, menulis `skin.json` dari `pet.json`, lalu memvalidasi ukuran dan alpha dengan decoder WPF. Di mesin pengguna belum ada tool konversi, sehingga jalur konversi nyata belum diuji (daftar pet dan pesan "tool belum terpasang" sudah diuji).
    - Verifikasi: 22 unit test baru (atlas sintetis dengan penanda per sel memastikan tiap frame dan pose gaze diambil dari baris/kolom yang benar pada ukuran sel non-default, penolakan PNG tanpa alpha, hot-swap `SpritePlayer`). Skin 2× (atlas 3072×4576, sel 384×416) dari atlas bawaan berhasil dimuat via `SkinManagerService` dalam 114 ms dengan sudut frame transparan. Benchmark RAM/CPU Tahap 3 belum diukur ulang setelah frame diubah menjadi bitmap salinan per sel.
+
+## Lokalisasi
+
+- Teks UI ada di `src/DesktopPet/Localization/Strings.resx` (bahasa Inggris, default/neutral) dan `Strings.id.resx` (bahasa Indonesia). Kunci diberi prefiks area: `Common_`, `Lang_`, `Menu_`, `Tray_`, `Bubble_`, `Ipc_`, `Process_`, `Skin_`, `Sheet_`, `Anim_`, `Ctl_`.
+- Kode C# memakai `Loc.T("Kunci")` dan `Loc.F("Kunci", args...)` (format memakai culture aktif). XAML memakai `{l:Tr Kunci}` (`xmlns:l="clr-namespace:DesktopPet.Localization"`), yaitu binding one-way ke indexer `Loc.Instance`.
+- Ganti bahasa: `Loc.Instance.SetLanguage("auto" | "en" | "id")` memicu `PropertyChanged("Item[]")` sehingga semua teks XAML ikut berubah, lalu `LanguageChanged` untuk UI yang dibangun di kode (menu klik kanan dibangun ulang, item tray diganti teksnya, teks status Panel Kontrol disusun ulang). Balon yang sedang tampil tidak diterjemahkan ulang.
+- `settings.json` → `Language`: `auto` (default; Indonesia bila bahasa tampilan Windows Indonesia, selain itu Inggris), `en`, atau `id`.
+- Nama dari data tidak diterjemahkan: nama aplikasi/dokumen dari judul jendela, nama skin dari `skin.json`, nama animasi/arah pandang di katalog (`AnimationCatalog`), dan nama bahasa (English / Bahasa Indonesia). Istilah teknis yang sudah berbahasa Inggris (Reduced Motion, Auto Wander, Gaze Tracking, Resource Monitoring, Pause/Resume) dibiarkan berbahasa Inggris di kedua bahasa.
+- `README.txt` dan `skin.example.json` di folder Skins ditulis sekali, dalam bahasa yang aktif saat folder itu dibuat.
+- Single-file publish menyertakan satellite assembly `id/DesktopPet.resources.dll` di dalam bundle exe (sudah dicek). Tidak ada folder `id\` terpisah.
+- Menambah teks baru: tambahkan kunci di **kedua** `.resx`. `LocalizationTests` gagal bila kunci atau placeholder `{n}` berbeda antar bahasa, bila kode/XAML memakai kunci yang tidak ada, atau bila ada kunci yang tidak terpakai. Test yang memeriksa teks lokal harus memakai `[Collection(LocalizationCollection.Name)]`, karena `Loc` berlaku untuk seluruh proses. Koleksi ini menetapkan bahasa Indonesia dan menjalankan test-nya secara berurutan.
 
 ## Verifikasi dan kriteria keberhasilan
 

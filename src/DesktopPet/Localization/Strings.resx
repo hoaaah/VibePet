@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English (default / neutral). Indonesian lives in Strings.id.resx with the same keys. -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- Common -->
+  <data name="Common_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Common_Inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Common_Note" xml:space="preserve"><value>Note: {0}</value></data>
+  <data name="Lang_Auto" xml:space="preserve"><value>Automatic (Windows language)</value></data>
+
+  <!-- Pet context menu -->
+  <data name="Menu_Animations" xml:space="preserve"><value>Animations</value></data>
+  <data name="Menu_Gaze" xml:space="preserve"><value>Gaze Direction</value></data>
+  <data name="Menu_Scale" xml:space="preserve"><value>Pet Size</value></data>
+  <data name="Menu_Skin" xml:space="preserve"><value>Skin</value></data>
+  <data name="Menu_Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="Menu_Behavior" xml:space="preserve"><value>Behavior Options</value></data>
+  <data name="Menu_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Menu_ControlPanel" xml:space="preserve"><value>Control Panel &amp; Tester...</value></data>
+  <data name="Menu_ResetPosition" xml:space="preserve"><value>Reset Position</value></data>
+  <data name="Menu_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Menu_AnimationItem" xml:space="preserve"><value>{0} (Row {1})</value></data>
+  <data name="Menu_GazeItem" xml:space="preserve"><value>{0} (Row {1}, Column {2})</value></data>
+  <data name="Menu_ResumeAuto" xml:space="preserve"><value>▶️ Back to Automatic Mode</value></data>
+  <data name="Menu_ReducedMotion" xml:space="preserve"><value>Reduced Motion</value></data>
+  <data name="Menu_AutoWander" xml:space="preserve"><value>Auto Wander</value></data>
+  <data name="Menu_WorkPacing" xml:space="preserve"><value>Work: Run Back and Forth</value></data>
+  <data name="Menu_GazeTracking" xml:space="preserve"><value>Gaze Tracking (Follow Mouse)</value></data>
+  <data name="Menu_TypingDetection" xml:space="preserve"><value>Typing Detection (Typing Review)</value></data>
+  <data name="Menu_ResourceMonitoring" xml:space="preserve"><value>Resource Monitoring (CPU &amp; RAM)</value></data>
+  <data name="Menu_ShowBadges" xml:space="preserve"><value>Show Load Badges (Sweat)</value></data>
+  <data name="Menu_StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
+  <data name="Menu_OpenSkinsFolder" xml:space="preserve"><value>Open Skins Folder...</value></data>
+
+  <!-- Tray -->
+  <data name="Tray_TogglePet" xml:space="preserve"><value>Show/Hide Pet</value></data>
+  <data name="Tray_OpenControlPanel" xml:space="preserve"><value>Open Control Panel...</value></data>
+  <data name="Tray_ResetPosition" xml:space="preserve"><value>Reset Pet Position</value></data>
+  <data name="Tray_More" xml:space="preserve"><value>+{0} more</value></data>
+
+  <!-- Speech bubble -->
+  <data name="Bubble_DefaultTitle" xml:space="preserve"><value>Notification</value></data>
+  <data name="Bubble_DefaultMessage" xml:space="preserve"><value>Notification message...</value></data>
+  <data name="Bubble_DefaultAction" xml:space="preserve"><value>Take Action</value></data>
+  <data name="Bubble_Close" xml:space="preserve"><value>Close</value></data>
+
+  <!-- IPC events (used when the sender omits title/message) -->
+  <data name="Ipc_StartTitle" xml:space="preserve"><value>Work Started</value></data>
+  <data name="Ipc_StartMessage" xml:space="preserve"><value>A process is running...</value></data>
+  <data name="Ipc_SuccessTitle" xml:space="preserve"><value>Work Completed</value></data>
+  <data name="Ipc_SuccessMessage" xml:space="preserve"><value>The task completed successfully!</value></data>
+  <data name="Ipc_ErrorTitle" xml:space="preserve"><value>An Error Occurred</value></data>
+  <data name="Ipc_ErrorMessage" xml:space="preserve"><value>The task or process failed.</value></data>
+  <data name="Ipc_ErrorAction" xml:space="preserve"><value>Dismiss Error</value></data>
+  <data name="Ipc_NeedsActionTitle" xml:space="preserve"><value>Action Needed</value></data>
+  <data name="Ipc_NeedsActionMessage" xml:space="preserve"><value>Waiting for your response or approval.</value></data>
+  <data name="Ipc_NotifyMessage" xml:space="preserve"><value>There is new information for you.</value></data>
+
+  <!-- Process watcher -->
+  <data name="Process_Unknown" xml:space="preserve"><value>Unknown Process</value></data>
+  <data name="Process_DetectedTitle" xml:space="preserve"><value>Processes Detected</value></data>
+  <data name="Process_StartedTitle" xml:space="preserve"><value>Process Started</value></data>
+  <data name="Process_RunningSingle" xml:space="preserve"><value>{0} is running.</value></data>
+  <data name="Process_DetectedList" xml:space="preserve"><value>Detected: {0}.</value></data>
+  <data name="Process_DetectedListMore" xml:space="preserve"><value>Detected: {0}, +{1} more.</value></data>
+  <data name="Process_CompletedTitle" xml:space="preserve"><value>Process Completed</value></data>
+  <data name="Process_Completed" xml:space="preserve"><value>{0} finished successfully (exit code: 0)!</value></data>
+  <data name="Process_FailedTitle" xml:space="preserve"><value>Process Failed</value></data>
+  <data name="Process_Failed" xml:space="preserve"><value>{0} exited with an error (exit code: {1}).</value></data>
+
+  <!-- Skins -->
+  <data name="Skin_BuiltInSuffix" xml:space="preserve"><value>(built-in)</value></data>
+  <data name="Skin_BuiltInDescription" xml:space="preserve"><value>Built-in Desktop Pet skin.</value></data>
+  <data name="Skin_NotFound" xml:space="preserve"><value>Skin '{0}' was not found in {1}.</value></data>
+  <data name="Skin_FailedTitle" xml:space="preserve"><value>Skin Failed to Load</value></data>
+  <data name="Skin_FailedMessage" xml:space="preserve"><value>{0}: {1} Still using {2}.</value></data>
+  <data name="Skin_ChangedTitle" xml:space="preserve"><value>Skin Changed</value></data>
+  <data name="Skin_Changed" xml:space="preserve"><value>Now using {0}.</value></data>
+  <data name="Skin_ChangedBy" xml:space="preserve"><value>Now using {0} by {1}.</value></data>
+  <data name="Skin_FolderTitle" xml:space="preserve"><value>Skins Folder</value></data>
+  <data name="Skin_FolderOpenFailed" xml:space="preserve"><value>Cannot open {0}: {1}</value></data>
+  <data name="Skin_ManifestInvalid" xml:space="preserve"><value>{0} is invalid: {1}</value></data>
+  <data name="Skin_SheetOutsideFolder" xml:space="preserve"><value>Spritesheet '{0}' must be inside the skin folder.</value></data>
+  <data name="Skin_NotPng" xml:space="preserve"><value>'{0}' is not a PNG. Only RGBA PNG is supported because the Windows WebP decoder drops transparency; convert it with scripts/import-codex-pet.ps1.</value></data>
+  <data name="Skin_SheetMissing" xml:space="preserve"><value>{0} was not found.</value></data>
+  <data name="Skin_SheetFileMissing" xml:space="preserve"><value>Spritesheet file not found.</value></data>
+  <data name="Skin_SheetTooLarge" xml:space="preserve"><value>Spritesheet file is too large ({0} MB; max {1} MB).</value></data>
+  <data name="Skin_ReadFailed" xml:space="preserve"><value>Failed to read the image: {0}</value></data>
+  <data name="Sheet_InvalidCellSize" xml:space="preserve"><value>Cell size {0}×{1} is invalid (1–{2} px).</value></data>
+  <data name="Sheet_TooSmall" xml:space="preserve"><value>Atlas {0}×{1} px is too small; it needs at least {2}×{3} px ({4} columns × {5} rows of {6}×{7} cells).</value></data>
+  <data name="Sheet_NoAlpha" xml:space="preserve"><value>The image has no alpha channel (transparency); the pet background would show as a box. Save it as an RGBA PNG.</value></data>
+  <data name="Anim_UnknownKey" xml:space="preserve"><value>Animation '{0}' is unknown and was ignored.</value></data>
+  <data name="Anim_FramesClamped" xml:space="preserve"><value>'{0}': frames {1} outside 1–{2}, clamped.</value></data>
+  <data name="Anim_DurationsAdjusted" xml:space="preserve"><value>'{0}': {1} durations for {2} frames, adjusted.</value></data>
+  <data name="Anim_OneShotLoopIgnored" xml:space="preserve"><value>'{0}' must play once; 'loop: true' ignored.</value></data>
+  <data name="Skin_Readme" xml:space="preserve"><value>Desktop Pet — Skins Folder
+========================
+
+Each skin is one folder here:
+
+  Skins\&lt;SkinName&gt;\spritesheet.png   (required, RGBA PNG with transparency)
+  Skins\&lt;SkinName&gt;\skin.json         (optional, see skin.example.json)
+
+Atlas contract (same as Codex v2 pets):
+  - 8 columns x 11 rows of cells. Default: 192 x 208 px cells, 1536 x 2288 px atlas.
+  - Rows 0-8 : idle, running-right, running-left, waving, jumping, failed, waiting, running, review
+  - Rows 9-10: 16 gaze directions (0 degrees = up, clockwise, 22.5 degree steps)
+
+skin.json may change the cell size, frame count (1-8), per-frame duration (40-2000 ms), and loop.
+The row order cannot be changed. waving and jumping always play once.
+
+Codex pets (spritesheet.webp) must be converted to PNG first, because the built-in
+Windows WebP decoder drops transparency. Use:
+  powershell -File scripts\import-codex-pet.ps1 -Name &lt;pet-name&gt;
+
+After adding a folder, pick the skin in the Control Panel ("Reload List" button)
+or right-click the pet &gt; Skin. No restart needed.
+</value></data>
+  <data name="Skin_ExampleManifest" xml:space="preserve"><value>{
+  // Copy this file to Skins\&lt;SkinName&gt;\skin.json and adjust it.
+  "name": "Skin Name",
+  "author": "Your Name",
+  "description": "Short description",
+  "spritesheet": "spritesheet.png",
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "animations": {
+    "idle":    { "frames": 6, "durations": [280, 110, 110, 140, 140, 320] },
+    "running": { "durations": [120, 120, 120, 120, 120, 220] }
+  }
+}
+</value></data>
+
+  <!-- Control Panel -->
+  <data name="Ctl_WindowTitle" xml:space="preserve"><value>Desktop Pet — Control Panel &amp; Tester</value></data>
+  <data name="Ctl_PriorityInitial" xml:space="preserve"><value>Active Priority: Idle</value></data>
+  <data name="Ctl_ModeManual" xml:space="preserve"><value>[Manual Lock]</value></data>
+  <data name="Ctl_ModeAuto" xml:space="preserve"><value>[Auto]</value></data>
+  <data name="Ctl_PriorityLine" xml:space="preserve"><value>{0} Priority: {1} -&gt; Animation: {2}</value></data>
+  <data name="Ctl_StatusGaze" xml:space="preserve"><value>Status: Gaze Pose [{0}]</value></data>
+  <data name="Ctl_StatusAnimation" xml:space="preserve"><value>Status: {0} (Frame {1}/{2})</value></data>
+
+  <data name="Ctl_ResourceGroup" xml:space="preserve"><value>Computer Resources &amp; Overhead (Stage 3)</value></data>
+  <data name="Ctl_SystemCpu" xml:space="preserve"><value>System CPU Load:</value></data>
+  <data name="Ctl_SystemRam" xml:space="preserve"><value>System RAM Usage:</value></data>
+  <data name="Ctl_CpuThreshold" xml:space="preserve"><value>High CPU Threshold:</value></data>
+  <data name="Ctl_RamThreshold" xml:space="preserve"><value>High RAM Threshold:</value></data>
+  <data name="Ctl_LoadSimulation" xml:space="preserve"><value>System Load Simulation:</value></data>
+  <data name="Ctl_SimHighCpu" xml:space="preserve"><value>🔥 Simulate High CPU (92%)</value></data>
+  <data name="Ctl_SimHighRam" xml:space="preserve"><value>⚡ Simulate Full RAM (88%)</value></data>
+  <data name="Ctl_NormalizeLoad" xml:space="preserve"><value>Normalize System Load</value></data>
+
+  <data name="Ctl_EventGroup" xml:space="preserve"><value>Event Simulation &amp; Priority (Stage 2)</value></data>
+  <data name="Ctl_EventHint" xml:space="preserve"><value>Test the state machine priority hierarchy:</value></data>
+  <data name="Ctl_SimError" xml:space="preserve"><value>Simulate Error (Failed - High Priority)</value></data>
+  <data name="Ctl_SimWaiting" xml:space="preserve"><value>Simulate Needs Response (Waiting)</value></data>
+  <data name="Ctl_SimWork" xml:space="preserve"><value>Simulate Computer Work (Running)</value></data>
+  <data name="Ctl_SimNotification" xml:space="preserve"><value>Send Notification (Waving 1x)</value></data>
+  <data name="Ctl_SimSuccess" xml:space="preserve"><value>Task Completed (Jumping 1x)</value></data>
+  <data name="Ctl_ResetSimulations" xml:space="preserve"><value>Reset All Event Simulations</value></data>
+
+  <data name="Ctl_IpcGroup" xml:space="preserve"><value>App Integration &amp; IPC Named Pipe (Stage 4)</value></data>
+  <data name="Ctl_IpcHint" xml:space="preserve"><value>Inter-process communication (IPC) over a named pipe for build, test, error, and notification events:</value></data>
+  <data name="Ctl_IpcServer" xml:space="preserve"><value>Named Pipe Server (\\.\pipe\DesktopPetIpc)</value></data>
+  <data name="Ctl_EventType" xml:space="preserve"><value>Event Type:</value></data>
+  <data name="Ctl_EventStart" xml:space="preserve"><value>start (Work Started - Running)</value></data>
+  <data name="Ctl_EventSuccess" xml:space="preserve"><value>success (Work Completed - Jumping)</value></data>
+  <data name="Ctl_EventError" xml:space="preserve"><value>error (Process Failed - Failed)</value></data>
+  <data name="Ctl_EventNeedsAction" xml:space="preserve"><value>needs_action (Action Needed - Waiting)</value></data>
+  <data name="Ctl_EventNotify" xml:space="preserve"><value>notify (Info Notification - Waving)</value></data>
+  <data name="Ctl_EventClear" xml:space="preserve"><value>clear (Clear Bubble &amp; Reset)</value></data>
+  <data name="Ctl_NotificationTitle" xml:space="preserve"><value>Notification Title:</value></data>
+  <data name="Ctl_SampleTitle" xml:space="preserve"><value>Build Succeeded</value></data>
+  <data name="Ctl_NotificationMessage" xml:space="preserve"><value>Notification / Bubble Message:</value></data>
+  <data name="Ctl_SampleMessage" xml:space="preserve"><value>DesktopPet project compiled in 1.2 seconds.</value></data>
+  <data name="Ctl_ActionButton" xml:space="preserve"><value>Action Button (Optional):</value></data>
+  <data name="Ctl_SampleAction" xml:space="preserve"><value>View Results</value></data>
+  <data name="Ctl_BubbleDuration" xml:space="preserve"><value>Bubble Duration (s, 0 = persistent):</value></data>
+  <data name="Ctl_SendIpc" xml:space="preserve"><value>🚀 Send IPC Event (Simulated Pipe Client)</value></data>
+  <data name="Ctl_IpcSending" xml:space="preserve"><value>Sending message via named pipe...</value></data>
+  <data name="Ctl_IpcResponse" xml:space="preserve"><value>Pipe response: {0} - {1}</value></data>
+  <data name="Ctl_IpcSentNoReply" xml:space="preserve"><value>Message sent (no reply text).</value></data>
+  <data name="Ctl_IpcConnectFailed" xml:space="preserve"><value>Failed to connect to the pipe: {0}</value></data>
+  <data name="Ctl_ProcessWatcher" xml:space="preserve"><value>Watch Processes Automatically (Process Watcher)</value></data>
+  <data name="Ctl_WatchedList" xml:space="preserve"><value>Watched target processes (start &amp; exit code):</value></data>
+  <data name="Ctl_Add" xml:space="preserve"><value>Add</value></data>
+  <data name="Ctl_Remove" xml:space="preserve"><value>Remove</value></data>
+
+  <data name="Ctl_AnimGroup" xml:space="preserve"><value>9 Main Animations (Manual Test — Locked from Gaze)</value></data>
+  <data name="Ctl_AnimHint" xml:space="preserve"><value>Click an animation below to play it continuously:</value></data>
+  <data name="Ctl_Anim0" xml:space="preserve"><value>0. Idle (Standing Still)</value></data>
+  <data name="Ctl_Anim1" xml:space="preserve"><value>1. Run Right</value></data>
+  <data name="Ctl_Anim2" xml:space="preserve"><value>2. Run Left</value></data>
+  <data name="Ctl_Anim3" xml:space="preserve"><value>3. Waving (Wave Hand)</value></data>
+  <data name="Ctl_Anim4" xml:space="preserve"><value>4. Jumping (Happy Jump)</value></data>
+  <data name="Ctl_Anim5" xml:space="preserve"><value>5. Failed (Sad / Error)</value></data>
+  <data name="Ctl_Anim6" xml:space="preserve"><value>6. Waiting (Asking / Waiting)</value></data>
+  <data name="Ctl_Anim7" xml:space="preserve"><value>7. PC Task Running (Busy)</value></data>
+  <data name="Ctl_Anim8" xml:space="preserve"><value>8. Review (Active Typing)</value></data>
+  <data name="Ctl_ResumeAuto" xml:space="preserve"><value>▶️ Back to Automatic Mode (State Machine)</value></data>
+
+  <data name="Ctl_GazeGroup" xml:space="preserve"><value>16 Gaze Directions (Manual Test)</value></data>
+  <data name="Ctl_GazeRow9" xml:space="preserve"><value>Row 9: 0° to 157.5°</value></data>
+  <data name="Ctl_GazeRow10" xml:space="preserve"><value>Row 10: 180° to 337.5°</value></data>
+  <data name="Ctl_Gaze0" xml:space="preserve"><value>0° (Up)</value></data>
+  <data name="Ctl_Gaze45" xml:space="preserve"><value>45° (Up-R)</value></data>
+  <data name="Ctl_Gaze90" xml:space="preserve"><value>90° (Right)</value></data>
+  <data name="Ctl_Gaze135" xml:space="preserve"><value>135° (Down-R)</value></data>
+  <data name="Ctl_Gaze180" xml:space="preserve"><value>180° (Down)</value></data>
+  <data name="Ctl_Gaze225" xml:space="preserve"><value>225° (Down-L)</value></data>
+  <data name="Ctl_Gaze270" xml:space="preserve"><value>270° (Left)</value></data>
+  <data name="Ctl_Gaze315" xml:space="preserve"><value>315° (Up-L)</value></data>
+
+  <data name="Ctl_SkinGroup" xml:space="preserve"><value>Skin / Sprite Pack</value></data>
+  <data name="Ctl_OpenSkinsFolder" xml:space="preserve"><value>Open Skins Folder</value></data>
+  <data name="Ctl_ReloadSkins" xml:space="preserve"><value>Reload List</value></data>
+  <data name="Ctl_SkinUnusable" xml:space="preserve"><value>Cannot be used: {0}</value></data>
+  <data name="Ctl_SkinBuiltInSource" xml:space="preserve"><value>built into the app</value></data>
+  <data name="Ctl_SkinCellSize" xml:space="preserve"><value>cell {0}×{1} px</value></data>
+  <data name="Ctl_SkinNotApplied" xml:space="preserve"><value>Not applied yet</value></data>
+  <data name="Ctl_SkinLoading" xml:space="preserve"><value>Loading {0}...</value></data>
+
+  <data name="Ctl_BehaviorGroup" xml:space="preserve"><value>Behavior &amp; Accessibility Options</value></data>
+  <data name="Ctl_Language" xml:space="preserve"><value>Language:</value></data>
+  <data name="Ctl_ReducedMotion" xml:space="preserve"><value>Reduced Motion (No running/moving: wander, drag, back-and-forth work)</value></data>
+  <data name="Ctl_AutoWander" xml:space="preserve"><value>Auto Wander (Pet occasionally walks around)</value></data>
+  <data name="Ctl_WorkStyleLabel" xml:space="preserve"><value>Animation style while the computer is working:</value></data>
+  <data name="Ctl_WorkStatic" xml:space="preserve"><value>Static in place</value></data>
+  <data name="Ctl_WorkPacing" xml:space="preserve"><value>Run back and forth</value></data>
+  <data name="Ctl_GazeTracking" xml:space="preserve"><value>Gaze Tracking (Eyes follow the mouse when neutral)</value></data>
+  <data name="Ctl_TypingDetection" xml:space="preserve"><value>Typing Detection (Typing triggers Review)</value></data>
+  <data name="Ctl_ResourceMonitoring" xml:space="preserve"><value>Resource Monitoring (CPU &amp; RAM Sampling)</value></data>
+  <data name="Ctl_ShowBadges" xml:space="preserve"><value>Show Load Indicators (Sweat / Badge)</value></data>
+
+  <data name="Ctl_SystemGroup" xml:space="preserve"><value>Distribution, Multi-Monitor &amp; System (Stage 5)</value></data>
+  <data name="Ctl_StartWithWindows" xml:space="preserve"><value>Start with Windows (Auto-Start Run)</value></data>
+  <data name="Ctl_DpiInfo" xml:space="preserve"><value>Resolution &amp; DPI: {0:0}% ({1:0} DPI) | Mode: PerMonitorV2</value></data>
+  <data name="Ctl_MonitorsInfo" xml:space="preserve"><value>Active Monitors: {0} detected (Primary: {1}x{2})</value></data>
+  <data name="Ctl_RecoverDisplays" xml:space="preserve"><value>Test Multi-Monitor Recovery</value></data>
+  <data name="Ctl_OpenDataFolder" xml:space="preserve"><value>Open Data/Settings Folder</value></data>
+  <data name="Ctl_RecoverTitle" xml:space="preserve"><value>Multi-Monitor Recovery</value></data>
+  <data name="Ctl_RecoverDone" xml:space="preserve"><value>Pet position aligned to X={0:0}, Y={1:0} within the active monitor area.</value></data>
+  <data name="Ctl_OpenDataFolderFailed" xml:space="preserve"><value>Failed to open the data folder: {0}</value></data>
+
+  <data name="Ctl_SizeGroup" xml:space="preserve"><value>Size &amp; Controls</value></data>
+  <data name="Ctl_Scale" xml:space="preserve"><value>Scale:</value></data>
+  <data name="Ctl_WalkRight" xml:space="preserve"><value>Walk Right</value></data>
+  <data name="Ctl_WalkLeft" xml:space="preserve"><value>Walk Left</value></data>
+  <data name="Ctl_ExitApp" xml:space="preserve"><value>Close Desktop Pet</value></data>
+</root>

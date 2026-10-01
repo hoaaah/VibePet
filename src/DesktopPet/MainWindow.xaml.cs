@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using DesktopPet.Localization;
 using DesktopPet.Models;
 using DesktopPet.Services;
 using DesktopPet.Views;
@@ -52,6 +53,8 @@ public partial class MainWindow : Window
 
         _settingsService = SettingsService.Instance;
         _settingsService.Load();
+        Loc.Instance.SetLanguage(_settingsService.Settings.Language);
+        Loc.Instance.LanguageChanged += OnLanguageChanged;
 
         _player = new SpritePlayer(_sheetManager);
         _player.FrameUpdated += OnFrameUpdated;
@@ -174,7 +177,7 @@ public partial class MainWindow : Window
             if (skin == null)
             {
                 spriteSet = null;
-                error = $"Skin '{skinId}' tidak ditemukan di {_skinManager.SkinsDirectory}.";
+                error = Loc.F("Skin_NotFound", skinId, _skinManager.SkinsDirectory);
             }
             else
             {
@@ -189,8 +192,8 @@ public partial class MainWindow : Window
         if (spriteSet == null)
         {
             ShowSpeechBubble(
-                "Skin Gagal Dimuat",
-                $"{skin?.DisplayName ?? skinId}: {error} Tetap memakai {_sheetManager.Current.Skin.DisplayName}.",
+                Loc.T("Skin_FailedTitle"),
+                Loc.F("Skin_FailedMessage", skin?.DisplayName ?? skinId, error, _sheetManager.Current.Skin.DisplayName),
                 timeoutSeconds: 10,
                 type: "error");
             _controlWindow?.SyncSelectedSkin(_sheetManager.Current.Skin.Id);
@@ -211,13 +214,13 @@ public partial class MainWindow : Window
         if (announce)
         {
             string message = spriteSet.Skin.Author == null
-                ? $"Sekarang memakai {spriteSet.Skin.DisplayName}."
-                : $"Sekarang memakai {spriteSet.Skin.DisplayName} oleh {spriteSet.Skin.Author}.";
+                ? Loc.F("Skin_Changed", spriteSet.Skin.DisplayName)
+                : Loc.F("Skin_ChangedBy", spriteSet.Skin.DisplayName, spriteSet.Skin.Author);
             if (spriteSet.Warnings.Count > 0)
             {
-                message += " Catatan: " + string.Join(" ", spriteSet.Warnings);
+                message += " " + Loc.F("Common_Note", string.Join(" ", spriteSet.Warnings));
             }
-            ShowSpeechBubble("Skin Diganti", message, timeoutSeconds: spriteSet.Warnings.Count > 0 ? 10 : 4, type: "notify");
+            ShowSpeechBubble(Loc.T("Skin_ChangedTitle"), message, timeoutSeconds: spriteSet.Warnings.Count > 0 ? 10 : 4, type: "notify");
         }
 
         return true;
@@ -247,7 +250,7 @@ public partial class MainWindow : Window
         }
 
         MenuSkins.Items.Add(new Separator());
-        var openFolder = new MenuItem { Header = "Buka Folder Skins..." };
+        var openFolder = new MenuItem { Header = Loc.T("Menu_OpenSkinsFolder") };
         openFolder.Click += (s, args) => OpenSkinsFolder();
         MenuSkins.Items.Add(openFolder);
     }
@@ -260,7 +263,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            ShowSpeechBubble("Folder Skins", $"Tidak bisa membuka {_skinManager.SkinsDirectory}: {ex.Message}", timeoutSeconds: 8, type: "error");
+            ShowSpeechBubble(Loc.T("Skin_FolderTitle"), Loc.F("Skin_FolderOpenFailed", _skinManager.SkinsDirectory, ex.Message), timeoutSeconds: 8, type: "error");
         }
     }
 
@@ -363,8 +366,8 @@ public partial class MainWindow : Window
                 case "work_started":
                     _stateMachine.SetWorkSource(WorkSource.Ipc, true);
                     ShowSpeechBubble(
-                        msg.Title ?? "Pekerjaan Dimulai",
-                        msg.Message ?? "Proses sedang berjalan...",
+                        msg.Title ?? Loc.T("Ipc_StartTitle"),
+                        msg.Message ?? Loc.T("Ipc_StartMessage"),
                         msg.ActionLabel,
                         msg.ActionCommand,
                         msg.TimeoutSeconds ?? 5,
@@ -377,8 +380,8 @@ public partial class MainWindow : Window
                     _stateMachine.SetWorkSource(WorkSource.Ipc, false);
                     _stateMachine.TriggerJobSuccess();
                     ShowSpeechBubble(
-                        msg.Title ?? "Pekerjaan Selesai",
-                        msg.Message ?? "Tugas berhasil diselesaikan dengan sukses!",
+                        msg.Title ?? Loc.T("Ipc_SuccessTitle"),
+                        msg.Message ?? Loc.T("Ipc_SuccessMessage"),
                         msg.ActionLabel,
                         msg.ActionCommand,
                         msg.TimeoutSeconds ?? 6,
@@ -391,9 +394,9 @@ public partial class MainWindow : Window
                     _stateMachine.SetWorkSource(WorkSource.Ipc, false);
                     _stateMachine.SetError(true);
                     ShowSpeechBubble(
-                        msg.Title ?? "Terjadi Error",
-                        msg.Message ?? "Tugas atau proses mengalami kegagalan.",
-                        msg.ActionLabel ?? "Tutup Error",
+                        msg.Title ?? Loc.T("Ipc_ErrorTitle"),
+                        msg.Message ?? Loc.T("Ipc_ErrorMessage"),
+                        msg.ActionLabel ?? Loc.T("Ipc_ErrorAction"),
                         msg.ActionCommand,
                         msg.TimeoutSeconds ?? 10,
                         "error"
@@ -405,9 +408,9 @@ public partial class MainWindow : Window
                 case "prompt":
                     _stateMachine.SetNeedsAction(true);
                     ShowSpeechBubble(
-                        msg.Title ?? "Butuh Tindakan",
-                        msg.Message ?? "Menunggu respons atau persetujuan Anda.",
-                        msg.ActionLabel ?? "Tindak Lanjuti",
+                        msg.Title ?? Loc.T("Ipc_NeedsActionTitle"),
+                        msg.Message ?? Loc.T("Ipc_NeedsActionMessage"),
+                        msg.ActionLabel ?? Loc.T("Bubble_DefaultAction"),
                         msg.ActionCommand,
                         msg.TimeoutSeconds ?? 0, // 0 = persistent
                         "action"
@@ -418,8 +421,8 @@ public partial class MainWindow : Window
                 case "waving":
                     _stateMachine.TriggerNotification();
                     ShowSpeechBubble(
-                        msg.Title ?? "Notifikasi",
-                        msg.Message ?? "Ada informasi baru untuk Anda.",
+                        msg.Title ?? Loc.T("Bubble_DefaultTitle"),
+                        msg.Message ?? Loc.T("Ipc_NotifyMessage"),
                         msg.ActionLabel,
                         msg.ActionCommand,
                         msg.TimeoutSeconds ?? 5,
@@ -441,7 +444,7 @@ public partial class MainWindow : Window
         Dispatcher.InvokeAsync(() =>
         {
             ShowSpeechBubble(
-                isInitialScan ? "Proses Terdeteksi" : "Proses Dimulai",
+                Loc.T(isInitialScan ? "Process_DetectedTitle" : "Process_StartedTitle"),
                 ProcessNameFormatter.FormatStartedSummary(identities),
                 timeoutSeconds: 4,
                 type: "work"
@@ -457,8 +460,8 @@ public partial class MainWindow : Window
             {
                 _stateMachine.TriggerJobSuccess();
                 ShowSpeechBubble(
-                    "Proses Selesai",
-                    $"{identity.DisplayName} selesai dengan sukses (exit code: 0)!",
+                    Loc.T("Process_CompletedTitle"),
+                    Loc.F("Process_Completed", identity.DisplayName),
                     timeoutSeconds: 5,
                     type: "success"
                 );
@@ -467,9 +470,9 @@ public partial class MainWindow : Window
             {
                 _stateMachine.SetError(true);
                 ShowSpeechBubble(
-                    "Proses Gagal",
-                    $"{identity.DisplayName} keluar dengan error (exit code: {exitCode}).",
-                    actionLabel: "Tutup",
+                    Loc.T("Process_FailedTitle"),
+                    Loc.F("Process_Failed", identity.DisplayName, exitCode),
+                    actionLabel: Loc.T("Bubble_Close"),
                     timeoutSeconds: 8,
                     type: "error"
                 );
@@ -745,12 +748,36 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnLanguageChanged()
+    {
+        // Menus built in code are rebuilt; XAML texts follow their {l:Tr} bindings automatically
+        BuildContextMenu();
+    }
+
+    /// <summary>
+    /// Switch the UI language ("auto", "en", "id") without a restart and remember it.
+    /// </summary>
+    public void SetLanguage(string language)
+    {
+        _settingsService.Settings.Language = language;
+        _settingsService.Save();
+        Loc.Instance.SetLanguage(language);
+        _controlWindow?.SyncLanguage();
+        BuildContextMenu(); // refresh check marks even when the resolved language did not change
+    }
+
     private void BuildContextMenu()
     {
+        MenuAnimations.Items.Clear();
+        MenuGaze.Items.Clear();
+        MenuScale.Items.Clear();
+        MenuBehavior.Items.Clear();
+        MenuLanguage.Items.Clear();
+
         // 1. Animations
         foreach (var (state, def) in AnimationCatalog.Animations)
         {
-            var item = new MenuItem { Header = $"{def.DisplayName} (Baris {def.RowIndex})" };
+            var item = new MenuItem { Header = Loc.F("Menu_AnimationItem", def.DisplayName, def.RowIndex) };
             var targetState = state;
             item.Click += (s, e) =>
             {
@@ -760,7 +787,7 @@ public partial class MainWindow : Window
             MenuAnimations.Items.Add(item);
         }
 
-        var itemResume = new MenuItem { Header = "▶️ Kembali ke Mode Otomatis", FontWeight = FontWeights.Bold };
+        var itemResume = new MenuItem { Header = Loc.T("Menu_ResumeAuto"), FontWeight = FontWeights.Bold };
         itemResume.Click += (s, e) => _stateMachine.ClearManualTestMode();
         MenuAnimations.Items.Add(new Separator());
         MenuAnimations.Items.Add(itemResume);
@@ -770,7 +797,7 @@ public partial class MainWindow : Window
         {
             var (row, col) = AnimationCatalog.GetGazeCell(gaze);
             string name = AnimationCatalog.GetGazeDisplayName(gaze);
-            var item = new MenuItem { Header = $"{name} (Baris {row}, Kolom {col})" };
+            var item = new MenuItem { Header = Loc.F("Menu_GazeItem", name, row, col) };
             var targetGaze = gaze;
             item.Click += (s, e) =>
             {
@@ -795,7 +822,7 @@ public partial class MainWindow : Window
 
         var itemReducedMotion = new MenuItem
         {
-            Header = "Reduced Motion",
+            Header = Loc.T("Menu_ReducedMotion"),
             IsCheckable = true,
             IsChecked = settings.ReducedMotion
         };
@@ -804,7 +831,7 @@ public partial class MainWindow : Window
 
         var itemAutoWander = new MenuItem
         {
-            Header = "Auto Wander (Jalan Otomatis)",
+            Header = Loc.T("Menu_AutoWander"),
             IsCheckable = true,
             IsChecked = settings.AutoWander
         };
@@ -813,7 +840,7 @@ public partial class MainWindow : Window
 
         _itemWorkPacing = new MenuItem
         {
-            Header = "Kerja: Berlari Bolak-balik",
+            Header = Loc.T("Menu_WorkPacing"),
             IsCheckable = true,
             IsChecked = settings.WorkAnimationStyle == WorkAnimationStyle.Pacing
         };
@@ -823,7 +850,7 @@ public partial class MainWindow : Window
 
         var itemGaze = new MenuItem
         {
-            Header = "Gaze Tracking (Ikuti Mouse)",
+            Header = Loc.T("Menu_GazeTracking"),
             IsCheckable = true,
             IsChecked = settings.GazeTracking
         };
@@ -832,7 +859,7 @@ public partial class MainWindow : Window
 
         var itemTyping = new MenuItem
         {
-            Header = "Deteksi Mengetik (Typing Review)",
+            Header = Loc.T("Menu_TypingDetection"),
             IsCheckable = true,
             IsChecked = settings.TypingDetection
         };
@@ -841,7 +868,7 @@ public partial class MainWindow : Window
 
         var itemResource = new MenuItem
         {
-            Header = "Resource Monitoring (CPU & RAM)",
+            Header = Loc.T("Menu_ResourceMonitoring"),
             IsCheckable = true,
             IsChecked = settings.ResourceMonitoring
         };
@@ -855,7 +882,7 @@ public partial class MainWindow : Window
 
         var itemBadges = new MenuItem
         {
-            Header = "Tampilkan Badge Beban (Keringat)",
+            Header = Loc.T("Menu_ShowBadges"),
             IsCheckable = true,
             IsChecked = settings.ShowResourceBadges
         };
@@ -870,14 +897,31 @@ public partial class MainWindow : Window
             }
             _settingsService.Save();
         };
+        MenuBehavior.Items.Add(itemBadges);
+
         var itemAutoStart = new MenuItem
         {
-            Header = "Mulai Otomatis bersama Windows",
+            Header = Loc.T("Menu_StartWithWindows"),
             IsCheckable = true,
             IsChecked = _autoStartService.IsAutoStartEnabled()
         };
         itemAutoStart.Click += (s, e) => SetStartWithWindows(itemAutoStart.IsChecked);
         MenuBehavior.Items.Add(itemAutoStart);
+
+        // 5. Language (native names are not translated)
+        var languageOptions = new List<(string Code, string Label)> { (Loc.AutoLanguage, Loc.T("Lang_Auto")) };
+        languageOptions.AddRange(Loc.Languages.Select(l => (l.Code, l.NativeName)));
+        foreach (var (code, label) in languageOptions)
+        {
+            var item = new MenuItem
+            {
+                Header = label,
+                IsChecked = Loc.Instance.LanguageSetting == code,
+            };
+            string targetCode = code;
+            item.Click += (s, e) => SetLanguage(targetCode);
+            MenuLanguage.Items.Add(item);
+        }
     }
 
     public void SetStartWithWindows(bool val)

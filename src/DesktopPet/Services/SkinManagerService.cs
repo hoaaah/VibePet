@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using DesktopPet.Localization;
 using DesktopPet.Models;
 
 namespace DesktopPet.Services;
@@ -22,8 +23,9 @@ public class SkinManagerService
     public const string ManifestFileName = "skin.json";
     public const long MaxSheetBytes = 64L * 1024 * 1024;
 
-    public static readonly SkinInfo BuiltInSkin = new(
-        BuiltInSkinId, "Kawahime", null, "Skin bawaan Desktop Pet.", null, null, IsBuiltIn: true, Manifest: null);
+    // A property so the description follows the current language
+    public static SkinInfo BuiltInSkin => new(
+        BuiltInSkinId, "Kawahime", null, Loc.T("Skin_BuiltInDescription"), null, null, IsBuiltIn: true, Manifest: null);
 
     public string SkinsDirectory { get; }
 
@@ -78,7 +80,7 @@ public class SkinManagerService
             catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
             {
                 return new SkinInfo(id, folderName, null, null, folder, null, false, null,
-                    $"{ManifestFileName} tidak valid: {ex.Message}");
+                    Loc.F("Skin_ManifestInvalid", ManifestFileName, ex.Message));
             }
         }
 
@@ -93,18 +95,17 @@ public class SkinManagerService
         string sheetPath = Path.GetFullPath(Path.Combine(folder, sheetName));
         if (!sheetPath.StartsWith(folderFull, StringComparison.OrdinalIgnoreCase))
         {
-            return Fail($"Spritesheet '{sheetName}' harus berada di dalam folder skin.");
+            return Fail(Loc.F("Skin_SheetOutsideFolder", sheetName));
         }
 
         if (!sheetPath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
         {
-            return Fail($"'{sheetName}' bukan PNG. Hanya PNG RGBA yang didukung karena decoder WebP Windows membuang transparansi; " +
-                        "konversi dengan scripts/import-codex-pet.ps1.");
+            return Fail(Loc.F("Skin_NotPng", sheetName));
         }
 
         if (!File.Exists(sheetPath))
         {
-            return Fail($"{sheetName} tidak ditemukan.");
+            return Fail(Loc.F("Skin_SheetMissing", sheetName));
         }
 
         return new SkinInfo(id, displayName, author, manifest?.Description, folder, sheetPath, false, manifest);
@@ -129,13 +130,13 @@ public class SkinManagerService
 
             if (skin.SheetPath == null || !File.Exists(skin.SheetPath))
             {
-                return new SkinLoadResult(null, "File spritesheet tidak ditemukan.");
+                return new SkinLoadResult(null, Loc.T("Skin_SheetFileMissing"));
             }
 
             long size = new FileInfo(skin.SheetPath).Length;
             if (size > MaxSheetBytes)
             {
-                return new SkinLoadResult(null, $"File spritesheet terlalu besar ({size / (1024 * 1024)} MB; maks {MaxSheetBytes / (1024 * 1024)} MB).");
+                return new SkinLoadResult(null, Loc.F("Skin_SheetTooLarge", size / (1024 * 1024), MaxSheetBytes / (1024 * 1024)));
             }
 
             var sheet = SpriteSheetManager.LoadFromFile(skin.SheetPath);
@@ -147,7 +148,7 @@ public class SkinManagerService
         }
         catch (Exception ex)
         {
-            return new SkinLoadResult(null, $"Gagal membaca gambar: {ex.Message}");
+            return new SkinLoadResult(null, Loc.F("Skin_ReadFailed", ex.Message));
         }
     }
 
@@ -164,59 +165,20 @@ public class SkinManagerService
     {
         Directory.CreateDirectory(SkinsDirectory);
 
+        // Written once, in the language active at that moment
         string readme = Path.Combine(SkinsDirectory, "README.txt");
         if (!File.Exists(readme))
         {
-            File.WriteAllText(readme, ReadmeText);
+            File.WriteAllText(readme, WithWindowsNewlines(Loc.T("Skin_Readme")));
         }
 
         string example = Path.Combine(SkinsDirectory, "skin.example.json");
         if (!File.Exists(example))
         {
-            File.WriteAllText(example, ExampleManifest);
+            File.WriteAllText(example, WithWindowsNewlines(Loc.T("Skin_ExampleManifest")));
         }
     }
 
-    private const string ReadmeText =
-        """
-        Desktop Pet — Folder Skin
-        =========================
-
-        Setiap skin adalah satu folder di sini:
-
-          Skins\<NamaSkin>\spritesheet.png   (wajib, PNG RGBA dengan transparansi)
-          Skins\<NamaSkin>\skin.json         (opsional, lihat skin.example.json)
-
-        Kontrak atlas (sama dengan pet Codex v2):
-          - 8 kolom x 11 baris sel. Bawaan: sel 192 x 208 px, atlas 1536 x 2288 px.
-          - Baris 0-8 : idle, running-right, running-left, waving, jumping, failed, waiting, running, review
-          - Baris 9-10: 16 arah pandang (0 derajat = atas, searah jarum jam, langkah 22,5 derajat)
-
-        skin.json boleh mengubah ukuran sel, jumlah frame (1-8), durasi tiap frame (40-2000 ms), dan loop.
-        Urutan baris tidak bisa diubah. waving dan jumping selalu diputar sekali.
-
-        Pet Codex (spritesheet.webp) harus dikonversi ke PNG dulu, karena decoder WebP
-        bawaan Windows membuang transparansi. Gunakan:
-          powershell -File scripts\import-codex-pet.ps1 -Name <nama-pet>
-
-        Setelah menambah folder, pilih skin di Panel Kontrol (tombol "Muat Ulang Daftar")
-        atau klik kanan pet > Skin. Tidak perlu restart.
-        """;
-
-    private const string ExampleManifest =
-        """
-        {
-          // Salin file ini ke Skins\<NamaSkin>\skin.json lalu ubah sesuai kebutuhan.
-          "name": "Nama Skin",
-          "author": "Nama Kamu",
-          "description": "Deskripsi singkat",
-          "spritesheet": "spritesheet.png",
-          "cellWidth": 192,
-          "cellHeight": 208,
-          "animations": {
-            "idle":    { "frames": 6, "durations": [280, 110, 110, 140, 140, 320] },
-            "running": { "durations": [120, 120, 120, 120, 120, 220] }
-          }
-        }
-        """;
+    private static string WithWindowsNewlines(string text) =>
+        text.Replace("\r\n", "\n").Replace("\n", "\r\n");
 }

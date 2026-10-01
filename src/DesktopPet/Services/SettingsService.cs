@@ -14,6 +14,8 @@ public class PetSettings
     public bool ReducedMotion { get; set; } = false;
     public bool AutoWander { get; set; } = true;
     public string SelectedSkin { get; set; } = SkinManagerService.BuiltInSkinId;
+    /// <summary>"auto" (follow Windows display language), "en" or "id".</summary>
+    public string Language { get; set; } = "auto";
     [JsonConverter(typeof(JsonStringEnumConverter<WorkAnimationStyle>))]
     public WorkAnimationStyle WorkAnimationStyle { get; set; } = WorkAnimationStyle.Pacing;
     public bool GazeTracking { get; set; } = true;

@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using DesktopPet.Localization;
 using DesktopPet.Models;
 
 namespace DesktopPet.Services;
@@ -87,7 +88,7 @@ public sealed class SpriteSet
 
         if (cellWidth <= 0 || cellHeight <= 0 || cellWidth > MaxCellSize || cellHeight > MaxCellSize)
         {
-            errors.Add($"Ukuran sel {cellWidth}×{cellHeight} tidak valid (1–{MaxCellSize} px).");
+            errors.Add(Loc.F("Sheet_InvalidCellSize", cellWidth, cellHeight, MaxCellSize));
             return errors;
         }
 
@@ -95,13 +96,13 @@ public sealed class SpriteSet
         long neededHeight = (long)cellHeight * AnimationCatalog.SheetRows;
         if (width < neededWidth || height < neededHeight)
         {
-            errors.Add($"Atlas {width}×{height} px terlalu kecil; butuh minimal {neededWidth}×{neededHeight} px " +
-                       $"({AnimationCatalog.SheetColumns} kolom × {AnimationCatalog.SheetRows} baris sel {cellWidth}×{cellHeight}).");
+            errors.Add(Loc.F("Sheet_TooSmall", width, height, neededWidth, neededHeight,
+                AnimationCatalog.SheetColumns, AnimationCatalog.SheetRows, cellWidth, cellHeight));
         }
 
         if (!hasAlpha)
         {
-            errors.Add("Gambar tidak punya kanal alpha (transparansi); latar pet akan terlihat kotak. Simpan sebagai PNG RGBA.");
+            errors.Add(Loc.T("Sheet_NoAlpha"));
         }
 
         return errors;

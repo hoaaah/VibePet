@@ -2,6 +2,7 @@ using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Forms;
+using DesktopPet.Localization;
 using DesktopPet.Views;
 using Application = System.Windows.Application;
 
@@ -14,6 +15,8 @@ public class TrayIconManager : IDisposable
     private NotifyIcon? _notifyIcon;
 
     private const string BaseTrayText = "Desktop Pet (Kawahime)";
+    private readonly List<(ToolStripMenuItem Item, string Key)> _localizedItems = new();
+    private IReadOnlyList<ProcessIdentity> _lastActiveProcesses = [];
 
     public TrayIconManager(MainWindow mainWindow, ControlWindow controlWindow)
     {
@@ -43,7 +46,7 @@ public class TrayIconManager : IDisposable
 
         var contextMenu = new ContextMenuStrip();
 
-        var togglePetItem = new ToolStripMenuItem("Tampilkan/Sembunyikan Pet", null, (s, e) =>
+        var togglePetItem = new ToolStripMenuItem(Loc.T("Tray_TogglePet"), null, (s, e) =>
         {
             if (_mainWindow.IsVisible)
             {
@@ -55,21 +58,29 @@ public class TrayIconManager : IDisposable
             }
         });
 
-        var openControlItem = new ToolStripMenuItem("Buka Panel Kontrol...", null, (s, e) =>
+        var openControlItem = new ToolStripMenuItem(Loc.T("Tray_OpenControlPanel"), null, (s, e) =>
         {
             _controlWindow.Show();
             _controlWindow.Activate();
         });
 
-        var resetPosItem = new ToolStripMenuItem("Reset Posisi Pet", null, (s, e) =>
+        var resetPosItem = new ToolStripMenuItem(Loc.T("Tray_ResetPosition"), null, (s, e) =>
         {
             _mainWindow.ResetPosition();
         });
 
-        var exitItem = new ToolStripMenuItem("Keluar", null, (s, e) =>
+        var exitItem = new ToolStripMenuItem(Loc.T("Menu_Exit"), null, (s, e) =>
         {
             Application.Current.Shutdown();
         });
+
+        // Item -> resource key, so a language switch only rewrites the texts
+        _localizedItems.Clear();
+        _localizedItems.Add((togglePetItem, "Tray_TogglePet"));
+        _localizedItems.Add((openControlItem, "Tray_OpenControlPanel"));
+        _localizedItems.Add((resetPosItem, "Tray_ResetPosition"));
+        _localizedItems.Add((exitItem, "Menu_Exit"));
+        Loc.Instance.LanguageChanged += OnLanguageChanged;
 
         contextMenu.Items.Add(togglePetItem);
         contextMenu.Items.Add(openControlItem);
@@ -93,8 +104,18 @@ public class TrayIconManager : IDisposable
         };
     }
 
+    private void OnLanguageChanged()
+    {
+        foreach (var (item, key) in _localizedItems)
+        {
+            item.Text = Loc.T(key);
+        }
+        UpdateActiveProcesses(_lastActiveProcesses);
+    }
+
     public void UpdateActiveProcesses(IReadOnlyList<ProcessIdentity> activeProcesses)
     {
+        _lastActiveProcesses = activeProcesses;
         if (_notifyIcon == null) return;
         // Header lebih pendek saat ada proses aktif supaya lebih banyak aplikasi muat dalam 63 karakter.
         _notifyIcon.Text = activeProcesses.Count == 0
@@ -104,6 +125,7 @@ public class TrayIconManager : IDisposable
 
     public void Dispose()
     {
+        Loc.Instance.LanguageChanged -= OnLanguageChanged;
         if (_notifyIcon != null)
         {
             _notifyIcon.Visible = false;

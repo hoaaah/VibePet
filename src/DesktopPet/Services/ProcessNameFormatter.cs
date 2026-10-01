@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using DesktopPet.Localization;
 
 namespace DesktopPet.Services;
 
@@ -123,7 +124,7 @@ public static class ProcessNameFormatter
     {
         string clean = NormalizeProcessName(processName);
         if (Profiles.TryGetValue(clean, out var profile)) return profile.FriendlyName;
-        if (clean.Length == 0) return "Proses Tidak Dikenal";
+        if (clean.Length == 0) return Loc.T("Process_Unknown");
 
         // "my_build-tool" -> "My Build Tool", "myBuildTool" -> "My Build Tool"
         var words = CamelBoundary.Replace(clean, " ")
@@ -285,13 +286,13 @@ public static class ProcessNameFormatter
     /// </summary>
     public static string FormatStartedSummary(IReadOnlyList<ProcessIdentity> identities, int maxItems = 4)
     {
-        if (identities.Count == 1) return $"{identities[0].DisplayName} terdeteksi sedang berjalan.";
+        if (identities.Count == 1) return Loc.F("Process_RunningSingle", identities[0].DisplayName);
 
         var labels = identities.Select(p => p.ShortLabel).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         string shown = string.Join(", ", labels.Take(maxItems));
         return labels.Count > maxItems
-            ? $"Terdeteksi: {shown}, +{labels.Count - maxItems} lainnya."
-            : $"Terdeteksi: {shown}.";
+            ? Loc.F("Process_DetectedListMore", shown, labels.Count - maxItems)
+            : Loc.F("Process_DetectedList", shown);
     }
 
     /// <summary>
@@ -303,7 +304,7 @@ public static class ProcessNameFormatter
         var labels = activeProcesses.Select(p => p.ShortLabel).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         if (labels.Count == 0) return Truncate(baseText, TrayTextLimit);
 
-        static string MoreLine(int remaining) => remaining > 0 ? $"\n+{remaining} lainnya" : "";
+        static string MoreLine(int remaining) => remaining > 0 ? "\n" + Loc.F("Tray_More", remaining) : "";
 
         var sb = new StringBuilder(baseText);
         int shown = 0;

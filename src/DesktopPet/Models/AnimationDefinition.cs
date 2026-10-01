@@ -1,3 +1,5 @@
+using DesktopPet.Localization;
+
 namespace DesktopPet.Models;
 
 public record AnimationDefinition(
@@ -140,7 +142,7 @@ public static class AnimationCatalog
             if (ov == null) continue;
             if (!TryParseStateKey(key, out var state))
             {
-                warnings?.Add($"Animasi '{key}' tidak dikenal, diabaikan.");
+                warnings?.Add(Loc.F("Anim_UnknownKey", key));
                 continue;
             }
 
@@ -149,14 +151,14 @@ public static class AnimationCatalog
             int frames = ov.Frames ?? baseDef.FrameCount;
             if (frames < 1 || frames > SheetColumns)
             {
-                warnings?.Add($"'{key}': frames {frames} di luar 1–{SheetColumns}, dijepit.");
+                warnings?.Add(Loc.F("Anim_FramesClamped", key, frames, SheetColumns));
                 frames = Math.Clamp(frames, 1, SheetColumns);
             }
 
             int[] sourceDurations = ov.Durations is { Length: > 0 } custom ? custom : baseDef.FrameDurationsMs;
             if (ov.Durations is { Length: > 0 } && ov.Durations.Length != frames)
             {
-                warnings?.Add($"'{key}': {ov.Durations.Length} durasi untuk {frames} frame, disesuaikan.");
+                warnings?.Add(Loc.F("Anim_DurationsAdjusted", key, ov.Durations.Length, frames));
             }
 
             // Resize to the frame count by truncating or repeating the last duration
@@ -169,7 +171,7 @@ public static class AnimationCatalog
             if (!baseDef.IsLooping && loop)
             {
                 // PetStateMachine waits for one-shot animations (waving, jumping) to complete
-                warnings?.Add($"'{key}' harus diputar sekali; 'loop: true' diabaikan.");
+                warnings?.Add(Loc.F("Anim_OneShotLoopIgnored", key));
                 loop = false;
             }
 

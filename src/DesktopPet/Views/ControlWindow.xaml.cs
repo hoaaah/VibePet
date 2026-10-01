@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using DesktopPet.Localization;
 using DesktopPet.Models;
 using DesktopPet.Services;
 using MediaBrushes = System.Windows.Media.Brushes;
@@ -68,14 +69,19 @@ public partial class ControlWindow : Window
 
         // Tahap 4: IPC & Process Watcher Settings
         ChkIpcEnabled.IsChecked = settings.EnableIpc;
-        TxtIpcStatus.Text = settings.EnableIpc ? "Aktif" : "Nonaktif";
-        TxtIpcStatus.Foreground = settings.EnableIpc ? MediaBrushes.LimeGreen : MediaBrushes.Gray;
+        SetActiveLabel(TxtIpcStatus, settings.EnableIpc);
 
         ChkProcessWatcher.IsChecked = settings.EnableProcessWatcher;
-        TxtWatcherStatus.Text = settings.EnableProcessWatcher ? "Aktif" : "Nonaktif";
-        TxtWatcherStatus.Foreground = settings.EnableProcessWatcher ? MediaBrushes.LimeGreen : MediaBrushes.Gray;
+        SetActiveLabel(TxtWatcherStatus, settings.EnableProcessWatcher);
+
+        // Sample IPC payload; once shown, the text boxes belong to the user
+        TxtIpcTitle.Text = Loc.T("Ctl_SampleTitle");
+        TxtIpcMessage.Text = Loc.T("Ctl_SampleMessage");
+        TxtIpcActionLabel.Text = Loc.T("Ctl_SampleAction");
 
         RefreshWatchedProcessList();
+        RefreshLanguageList();
+        Loc.Instance.LanguageChanged += OnLanguageChanged;
 
         SliderCpuThreshold.Value = settings.CpuHighThreshold;
         TxtCpuThresholdVal.Text = $"{settings.CpuHighThreshold:0}%";
@@ -84,6 +90,51 @@ public partial class ControlWindow : Window
         TxtRamThresholdVal.Text = $"{settings.RamHighThreshold:0}%";
 
         UpdateStatusText();
+    }
+
+    // --- Language ---
+    private sealed record LanguageOption(string Code, string Label);
+    private bool _suppressLanguageSelection;
+
+    private void RefreshLanguageList()
+    {
+        var options = new List<LanguageOption> { new(Loc.AutoLanguage, Loc.T("Lang_Auto")) };
+        options.AddRange(Loc.Languages.Select(l => new LanguageOption(l.Code, l.NativeName)));
+
+        _suppressLanguageSelection = true;
+        CmbLanguage.ItemsSource = options;
+        CmbLanguage.SelectedItem = options.FirstOrDefault(o => o.Code == Loc.Instance.LanguageSetting) ?? options[0];
+        _suppressLanguageSelection = false;
+    }
+
+    /// <summary>Called by MainWindow when the language is changed from the pet's context menu.</summary>
+    public void SyncLanguage() => RefreshLanguageList();
+
+    private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressLanguageSelection || CmbLanguage.SelectedItem is not LanguageOption option) return;
+        _mainWindow.SetLanguage(option.Code);
+    }
+
+    /// <summary>
+    /// XAML texts update through {l:Tr} bindings; texts composed in code are rebuilt here.
+    /// </summary>
+    private void OnLanguageChanged()
+    {
+        RefreshLanguageList();
+        SetActiveLabel(TxtIpcStatus, ChkIpcEnabled.IsChecked == true);
+        SetActiveLabel(TxtWatcherStatus, ChkProcessWatcher.IsChecked == true);
+        TxtPriority.Text = Loc.T("Ctl_PriorityInitial");
+        UpdateStatusText();
+        UpdateDisplayAndDpiInfo();
+        RefreshSkinList();
+        TxtIpcResult.Text = "";
+    }
+
+    private static void SetActiveLabel(TextBlock label, bool active)
+    {
+        label.Text = Loc.T(active ? "Common_Active" : "Common_Inactive");
+        label.Foreground = active ? MediaBrushes.LimeGreen : MediaBrushes.Gray;
     }
 
     private void OnPlayerFrameUpdated(System.Windows.Media.Imaging.BitmapSource _)
@@ -100,8 +151,8 @@ public partial class ControlWindow : Window
     {
         Dispatcher.InvokeAsync(() =>
         {
-            string mode = _stateMachine.IsManualTestMode ? "[Manual Lock]" : "[Otomatis]";
-            TxtPriority.Text = $"{mode} Prioritas: {priority} -> Animasi: {state}";
+            string mode = Loc.T(_stateMachine.IsManualTestMode ? "Ctl_ModeManual" : "Ctl_ModeAuto");
+            TxtPriority.Text = Loc.F("Ctl_PriorityLine", mode, priority, state);
             UpdateStatusText();
         });
     }
@@ -125,7 +176,7 @@ public partial class ControlWindow : Window
         if (_player.IsStaticGaze && _player.CurrentGaze.HasValue)
         {
             string gazeName = AnimationCatalog.GetGazeDisplayName(_player.CurrentGaze.Value);
-            TxtStatus.Text = $"Status: Pose Arah Pandang [{gazeName}]";
+            TxtStatus.Text = Loc.F("Ctl_StatusGaze", gazeName);
         }
         else
         {
@@ -133,7 +184,7 @@ public partial class ControlWindow : Window
                 ? def.DisplayName
                 : _player.CurrentState.ToString();
 
-            TxtStatus.Text = $"Status: {stateName} (Frame {_player.CurrentFrameIndex + 1}/{_player.TotalFrames})";
+            TxtStatus.Text = Loc.F("Ctl_StatusAnimation", stateName, _player.CurrentFrameIndex + 1, _player.TotalFrames);
         }
     }
 
@@ -241,15 +292,12 @@ public partial class ControlWindow : Window
         if (isChecked)
         {
             _ipcServer.Start();
-            TxtIpcStatus.Text = "Aktif";
-            TxtIpcStatus.Foreground = MediaBrushes.LimeGreen;
         }
         else
         {
             _ipcServer.Stop();
-            TxtIpcStatus.Text = "Nonaktif";
-            TxtIpcStatus.Foreground = MediaBrushes.Gray;
         }
+        SetActiveLabel(TxtIpcStatus, isChecked);
         SettingsService.Instance.Save();
     }
 
@@ -273,7 +321,7 @@ public partial class ControlWindow : Window
             TimeoutSeconds = timeout
         };
 
-        TxtIpcResult.Text = "Mengirim pesan via named pipe...";
+        TxtIpcResult.Text = Loc.T("Ctl_IpcSending");
         TxtIpcResult.Foreground = MediaBrushes.Yellow;
 
         try
@@ -291,18 +339,18 @@ public partial class ControlWindow : Window
             if (!string.IsNullOrWhiteSpace(responseJson))
             {
                 var response = JsonSerializer.Deserialize<PetEventResponse>(responseJson);
-                TxtIpcResult.Text = $"Respons Pipe: {response?.Status} - {response?.Message}";
+                TxtIpcResult.Text = Loc.F("Ctl_IpcResponse", response?.Status, response?.Message);
                 TxtIpcResult.Foreground = MediaBrushes.LimeGreen;
             }
             else
             {
-                TxtIpcResult.Text = "Pesan terkirim (tanpa teks balasan).";
+                TxtIpcResult.Text = Loc.T("Ctl_IpcSentNoReply");
                 TxtIpcResult.Foreground = MediaBrushes.LightSkyBlue;
             }
         }
         catch (Exception ex)
         {
-            TxtIpcResult.Text = $"Gagal terhubung ke pipe: {ex.Message}";
+            TxtIpcResult.Text = Loc.F("Ctl_IpcConnectFailed", ex.Message);
             TxtIpcResult.Foreground = MediaBrushes.IndianRed;
         }
     }
@@ -312,8 +360,7 @@ public partial class ControlWindow : Window
         bool isChecked = ChkProcessWatcher.IsChecked == true;
         _processWatcher.IsEnabled = isChecked;
         SettingsService.Instance.Settings.EnableProcessWatcher = isChecked;
-        TxtWatcherStatus.Text = isChecked ? "Aktif" : "Nonaktif";
-        TxtWatcherStatus.Foreground = isChecked ? MediaBrushes.LimeGreen : MediaBrushes.Gray;
+        SetActiveLabel(TxtWatcherStatus, isChecked);
         SettingsService.Instance.Save();
     }
 
@@ -402,18 +449,22 @@ public partial class ControlWindow : Window
         if (skin.Error != null)
         {
             TxtSkinStatus.Foreground = MediaBrushes.IndianRed;
-            TxtSkinStatus.Text = $"Tidak bisa dipakai: {skin.Error}";
+            TxtSkinStatus.Text = Loc.F("Ctl_SkinUnusable", skin.Error);
             return;
         }
 
         var current = SpriteSheetManager.Instance.Current;
         bool isActive = current.Skin.Id.Equals(skin.Id, StringComparison.OrdinalIgnoreCase);
-        string source = skin.IsBuiltIn ? "bawaan aplikasi" : skin.Directory ?? "";
-        string size = isActive ? $"sel {current.CellWidth}×{current.CellHeight} px · " : "";
-        string warnings = isActive && current.Warnings.Count > 0 ? $"\nCatatan: {string.Join(" ", current.Warnings)}" : "";
+
+        var parts = new List<string> { Loc.T(isActive ? "Common_Active" : "Ctl_SkinNotApplied") };
+        if (isActive) parts.Add(Loc.F("Ctl_SkinCellSize", current.CellWidth, current.CellHeight));
+        parts.Add(skin.IsBuiltIn ? Loc.T("Ctl_SkinBuiltInSource") : skin.Directory ?? "");
+        string warnings = isActive && current.Warnings.Count > 0
+            ? "\n" + Loc.F("Common_Note", string.Join(" ", current.Warnings))
+            : "";
 
         TxtSkinStatus.Foreground = isActive ? MediaBrushes.LightGreen : new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xA6, 0xAD, 0xC8));
-        TxtSkinStatus.Text = $"{(isActive ? "Aktif" : "Belum diterapkan")} · {size}{source}{warnings}";
+        TxtSkinStatus.Text = string.Join(" · ", parts) + warnings;
     }
 
     private async void CmbSkins_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -426,7 +477,7 @@ public partial class ControlWindow : Window
             return;
         }
 
-        TxtSkinStatus.Text = $"Memuat {skin.DisplayName}...";
+        TxtSkinStatus.Text = Loc.F("Ctl_SkinLoading", skin.DisplayName);
         await _mainWindow.ApplySkinAsync(skin.Id);
     }
 
@@ -543,8 +594,8 @@ public partial class ControlWindow : Window
         _mainWindow.ValidateAndReposition();
         UpdateDisplayAndDpiInfo();
         System.Windows.MessageBox.Show(
-            $"Posisi Pet berhasil diselaraskan pada koordinat X={_mainWindow.Left:0}, Y={_mainWindow.Top:0} di area monitor aktif.",
-            "Pemulihan Multi-Monitor",
+            Loc.F("Ctl_RecoverDone", _mainWindow.Left, _mainWindow.Top),
+            Loc.T("Ctl_RecoverTitle"),
             MessageBoxButton.OK,
             MessageBoxImage.Information
         );
@@ -567,7 +618,7 @@ public partial class ControlWindow : Window
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show($"Gagal membuka folder data: {ex.Message}");
+            System.Windows.MessageBox.Show(Loc.F("Ctl_OpenDataFolderFailed", ex.Message));
         }
     }
 
@@ -577,10 +628,11 @@ public partial class ControlWindow : Window
         {
             var dpi = VisualTreeHelper.GetDpi(_mainWindow);
             double scalePercent = dpi.DpiScaleX * 100.0;
-            TxtDpiInfo.Text = $"Resolusi & DPI: {scalePercent:0}% ({dpi.PixelsPerInchX:0} DPI) | Mode: PerMonitorV2";
+            TxtDpiInfo.Text = Loc.F("Ctl_DpiInfo", scalePercent, dpi.PixelsPerInchX);
 
             var screens = System.Windows.Forms.Screen.AllScreens;
-            TxtMonitorsInfo.Text = $"Monitor Aktif: {screens.Length} Layar Terdeteksi (Utama: {System.Windows.Forms.Screen.PrimaryScreen?.Bounds.Width}x{System.Windows.Forms.Screen.PrimaryScreen?.Bounds.Height})";
+            var primary = System.Windows.Forms.Screen.PrimaryScreen?.Bounds;
+            TxtMonitorsInfo.Text = Loc.F("Ctl_MonitorsInfo", screens.Length, primary?.Width, primary?.Height);
         }
         catch
         {

@@ -8,6 +8,7 @@ using Xunit;
 
 namespace DesktopPet.Tests;
 
+[Collection(LocalizationCollection.Name)]
 public class SkinTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "DesktopPetSkinTests", Guid.NewGuid().ToString("N"));

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bahasa Indonesia. Kunci harus sama dengan Strings.resx (diperiksa oleh LocalizationTests). -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <!-- Umum -->
+  <data name="Common_Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Common_Inactive" xml:space="preserve"><value>Nonaktif</value></data>
+  <data name="Common_Note" xml:space="preserve"><value>Catatan: {0}</value></data>
+  <data name="Lang_Auto" xml:space="preserve"><value>Otomatis (bahasa Windows)</value></data>
+
+  <!-- Menu klik kanan pet -->
+  <data name="Menu_Animations" xml:space="preserve"><value>Animasi</value></data>
+  <data name="Menu_Gaze" xml:space="preserve"><value>Arah Pandang</value></data>
+  <data name="Menu_Scale" xml:space="preserve"><value>Ukuran Pet</value></data>
+  <data name="Menu_Skin" xml:space="preserve"><value>Skin</value></data>
+  <data name="Menu_Loading" xml:space="preserve"><value>Memuat...</value></data>
+  <data name="Menu_Behavior" xml:space="preserve"><value>Opsi Perilaku</value></data>
+  <data name="Menu_Language" xml:space="preserve"><value>Bahasa</value></data>
+  <data name="Menu_ControlPanel" xml:space="preserve"><value>Panel Kontrol &amp; Tester...</value></data>
+  <data name="Menu_ResetPosition" xml:space="preserve"><value>Reset Posisi</value></data>
+  <data name="Menu_Exit" xml:space="preserve"><value>Keluar</value></data>
+  <data name="Menu_AnimationItem" xml:space="preserve"><value>{0} (Baris {1})</value></data>
+  <data name="Menu_GazeItem" xml:space="preserve"><value>{0} (Baris {1}, Kolom {2})</value></data>
+  <data name="Menu_ResumeAuto" xml:space="preserve"><value>▶️ Kembali ke Mode Otomatis</value></data>
+  <data name="Menu_ReducedMotion" xml:space="preserve"><value>Reduced Motion</value></data>
+  <data name="Menu_AutoWander" xml:space="preserve"><value>Auto Wander (Jalan Otomatis)</value></data>
+  <data name="Menu_WorkPacing" xml:space="preserve"><value>Kerja: Berlari Bolak-balik</value></data>
+  <data name="Menu_GazeTracking" xml:space="preserve"><value>Gaze Tracking (Ikuti Mouse)</value></data>
+  <data name="Menu_TypingDetection" xml:space="preserve"><value>Deteksi Mengetik (Typing Review)</value></data>
+  <data name="Menu_ResourceMonitoring" xml:space="preserve"><value>Resource Monitoring (CPU &amp; RAM)</value></data>
+  <data name="Menu_ShowBadges" xml:space="preserve"><value>Tampilkan Badge Beban (Keringat)</value></data>
+  <data name="Menu_StartWithWindows" xml:space="preserve"><value>Mulai Otomatis bersama Windows</value></data>
+  <data name="Menu_OpenSkinsFolder" xml:space="preserve"><value>Buka Folder Skins...</value></data>
+
+  <!-- Tray -->
+  <data name="Tray_TogglePet" xml:space="preserve"><value>Tampilkan/Sembunyikan Pet</value></data>
+  <data name="Tray_OpenControlPanel" xml:space="preserve"><value>Buka Panel Kontrol...</value></data>
+  <data name="Tray_ResetPosition" xml:space="preserve"><value>Reset Posisi Pet</value></data>
+  <data name="Tray_More" xml:space="preserve"><value>+{0} lainnya</value></data>
+
+  <!-- Balon -->
+  <data name="Bubble_DefaultTitle" xml:space="preserve"><value>Notifikasi</value></data>
+  <data name="Bubble_DefaultMessage" xml:space="preserve"><value>Pesan notifikasi...</value></data>
+  <data name="Bubble_DefaultAction" xml:space="preserve"><value>Tindak Lanjuti</value></data>
+  <data name="Bubble_Close" xml:space="preserve"><value>Tutup</value></data>
+
+  <!-- Event IPC (dipakai bila pengirim tidak mengisi judul/pesan) -->
+  <data name="Ipc_StartTitle" xml:space="preserve"><value>Pekerjaan Dimulai</value></data>
+  <data name="Ipc_StartMessage" xml:space="preserve"><value>Proses sedang berjalan...</value></data>
+  <data name="Ipc_SuccessTitle" xml:space="preserve"><value>Pekerjaan Selesai</value></data>
+  <data name="Ipc_SuccessMessage" xml:space="preserve"><value>Tugas berhasil diselesaikan dengan sukses!</value></data>
+  <data name="Ipc_ErrorTitle" xml:space="preserve"><value>Terjadi Error</value></data>
+  <data name="Ipc_ErrorMessage" xml:space="preserve"><value>Tugas atau proses mengalami kegagalan.</value></data>
+  <data name="Ipc_ErrorAction" xml:space="preserve"><value>Tutup Error</value></data>
+  <data name="Ipc_NeedsActionTitle" xml:space="preserve"><value>Butuh Tindakan</value></data>
+  <data name="Ipc_NeedsActionMessage" xml:space="preserve"><value>Menunggu respons atau persetujuan Anda.</value></data>
+  <data name="Ipc_NotifyMessage" xml:space="preserve"><value>Ada informasi baru untuk Anda.</value></data>
+
+  <!-- Process watcher -->
+  <data name="Process_Unknown" xml:space="preserve"><value>Proses Tidak Dikenal</value></data>
+  <data name="Process_DetectedTitle" xml:space="preserve"><value>Proses Terdeteksi</value></data>
+  <data name="Process_StartedTitle" xml:space="preserve"><value>Proses Dimulai</value></data>
+  <data name="Process_RunningSingle" xml:space="preserve"><value>{0} terdeteksi sedang berjalan.</value></data>
+  <data name="Process_DetectedList" xml:space="preserve"><value>Terdeteksi: {0}.</value></data>
+  <data name="Process_DetectedListMore" xml:space="preserve"><value>Terdeteksi: {0}, +{1} lainnya.</value></data>
+  <data name="Process_CompletedTitle" xml:space="preserve"><value>Proses Selesai</value></data>
+  <data name="Process_Completed" xml:space="preserve"><value>{0} selesai dengan sukses (exit code: 0)!</value></data>
+  <data name="Process_FailedTitle" xml:space="preserve"><value>Proses Gagal</value></data>
+  <data name="Process_Failed" xml:space="preserve"><value>{0} keluar dengan error (exit code: {1}).</value></data>
+
+  <!-- Skin -->
+  <data name="Skin_BuiltInSuffix" xml:space="preserve"><value>(bawaan)</value></data>
+  <data name="Skin_BuiltInDescription" xml:space="preserve"><value>Skin bawaan Desktop Pet.</value></data>
+  <data name="Skin_NotFound" xml:space="preserve"><value>Skin '{0}' tidak ditemukan di {1}.</value></data>
+  <data name="Skin_FailedTitle" xml:space="preserve"><value>Skin Gagal Dimuat</value></data>
+  <data name="Skin_FailedMessage" xml:space="preserve"><value>{0}: {1} Tetap memakai {2}.</value></data>
+  <data name="Skin_ChangedTitle" xml:space="preserve"><value>Skin Diganti</value></data>
+  <data name="Skin_Changed" xml:space="preserve"><value>Sekarang memakai {0}.</value></data>
+  <data name="Skin_ChangedBy" xml:space="preserve"><value>Sekarang memakai {0} oleh {1}.</value></data>
+  <data name="Skin_FolderTitle" xml:space="preserve"><value>Folder Skins</value></data>
+  <data name="Skin_FolderOpenFailed" xml:space="preserve"><value>Tidak bisa membuka {0}: {1}</value></data>
+  <data name="Skin_ManifestInvalid" xml:space="preserve"><value>{0} tidak valid: {1}</value></data>
+  <data name="Skin_SheetOutsideFolder" xml:space="preserve"><value>Spritesheet '{0}' harus berada di dalam folder skin.</value></data>
+  <data name="Skin_NotPng" xml:space="preserve"><value>'{0}' bukan PNG. Hanya PNG RGBA yang didukung karena decoder WebP Windows membuang transparansi; konversi dengan scripts/import-codex-pet.ps1.</value></data>
+  <data name="Skin_SheetMissing" xml:space="preserve"><value>{0} tidak ditemukan.</value></data>
+  <data name="Skin_SheetFileMissing" xml:space="preserve"><value>File spritesheet tidak ditemukan.</value></data>
+  <data name="Skin_SheetTooLarge" xml:space="preserve"><value>File spritesheet terlalu besar ({0} MB; maks {1} MB).</value></data>
+  <data name="Skin_ReadFailed" xml:space="preserve"><value>Gagal membaca gambar: {0}</value></data>
+  <data name="Sheet_InvalidCellSize" xml:space="preserve"><value>Ukuran sel {0}×{1} tidak valid (1–{2} px).</value></data>
+  <data name="Sheet_TooSmall" xml:space="preserve"><value>Atlas {0}×{1} px terlalu kecil; butuh minimal {2}×{3} px ({4} kolom × {5} baris sel {6}×{7}).</value></data>
+  <data name="Sheet_NoAlpha" xml:space="preserve"><value>Gambar tidak punya kanal alpha (transparansi); latar pet akan terlihat kotak. Simpan sebagai PNG RGBA.</value></data>
+  <data name="Anim_UnknownKey" xml:space="preserve"><value>Animasi '{0}' tidak dikenal, diabaikan.</value></data>
+  <data name="Anim_FramesClamped" xml:space="preserve"><value>'{0}': frames {1} di luar 1–{2}, dijepit.</value></data>
+  <data name="Anim_DurationsAdjusted" xml:space="preserve"><value>'{0}': {1} durasi untuk {2} frame, disesuaikan.</value></data>
+  <data name="Anim_OneShotLoopIgnored" xml:space="preserve"><value>'{0}' harus diputar sekali; 'loop: true' diabaikan.</value></data>
+  <data name="Skin_Readme" xml:space="preserve"><value>Desktop Pet — Folder Skin
+=========================
+
+Setiap skin adalah satu folder di sini:
+
+  Skins\&lt;NamaSkin&gt;\spritesheet.png   (wajib, PNG RGBA dengan transparansi)
+  Skins\&lt;NamaSkin&gt;\skin.json         (opsional, lihat skin.example.json)
+
+Kontrak atlas (sama dengan pet Codex v2):
+  - 8 kolom x 11 baris sel. Bawaan: sel 192 x 208 px, atlas 1536 x 2288 px.
+  - Baris 0-8 : idle, running-right, running-left, waving, jumping, failed, waiting, running, review
+  - Baris 9-10: 16 arah pandang (0 derajat = atas, searah jarum jam, langkah 22,5 derajat)
+
+skin.json boleh mengubah ukuran sel, jumlah frame (1-8), durasi tiap frame (40-2000 ms), dan loop.
+Urutan baris tidak bisa diubah. waving dan jumping selalu diputar sekali.
+
+Pet Codex (spritesheet.webp) harus dikonversi ke PNG dulu, karena decoder WebP
+bawaan Windows membuang transparansi. Gunakan:
+  powershell -File scripts\import-codex-pet.ps1 -Name &lt;nama-pet&gt;
+
+Setelah menambah folder, pilih skin di Panel Kontrol (tombol "Muat Ulang Daftar")
+atau klik kanan pet &gt; Skin. Tidak perlu restart.
+</value></data>
+  <data name="Skin_ExampleManifest" xml:space="preserve"><value>{
+  // Salin file ini ke Skins\&lt;NamaSkin&gt;\skin.json lalu ubah sesuai kebutuhan.
+  "name": "Nama Skin",
+  "author": "Nama Kamu",
+  "description": "Deskripsi singkat",
+  "spritesheet": "spritesheet.png",
+  "cellWidth": 192,
+  "cellHeight": 208,
+  "animations": {
+    "idle":    { "frames": 6, "durations": [280, 110, 110, 140, 140, 320] },
+    "running": { "durations": [120, 120, 120, 120, 120, 220] }
+  }
+}
+</value></data>
+
+  <!-- Panel Kontrol -->
+  <data name="Ctl_WindowTitle" xml:space="preserve"><value>Desktop Pet — Panel Kontrol &amp; Tester</value></data>
+  <data name="Ctl_PriorityInitial" xml:space="preserve"><value>Prioritas Aktif: Idle</value></data>
+  <data name="Ctl_ModeManual" xml:space="preserve"><value>[Manual Lock]</value></data>
+  <data name="Ctl_ModeAuto" xml:space="preserve"><value>[Otomatis]</value></data>
+  <data name="Ctl_PriorityLine" xml:space="preserve"><value>{0} Prioritas: {1} -&gt; Animasi: {2}</value></data>
+  <data name="Ctl_StatusGaze" xml:space="preserve"><value>Status: Pose Arah Pandang [{0}]</value></data>
+  <data name="Ctl_StatusAnimation" xml:space="preserve"><value>Status: {0} (Frame {1}/{2})</value></data>
+
+  <data name="Ctl_ResourceGroup" xml:space="preserve"><value>Resource Komputer &amp; Overhead (Tahap 3)</value></data>
+  <data name="Ctl_SystemCpu" xml:space="preserve"><value>Beban CPU Sistem:</value></data>
+  <data name="Ctl_SystemRam" xml:space="preserve"><value>Penggunaan RAM Sistem:</value></data>
+  <data name="Ctl_CpuThreshold" xml:space="preserve"><value>Ambang CPU Tinggi:</value></data>
+  <data name="Ctl_RamThreshold" xml:space="preserve"><value>Ambang RAM Tinggi:</value></data>
+  <data name="Ctl_LoadSimulation" xml:space="preserve"><value>Simulasi Beban Sistem:</value></data>
+  <data name="Ctl_SimHighCpu" xml:space="preserve"><value>🔥 Simulasikan CPU Tinggi (92%)</value></data>
+  <data name="Ctl_SimHighRam" xml:space="preserve"><value>⚡ Simulasikan RAM Penuh (88%)</value></data>
+  <data name="Ctl_NormalizeLoad" xml:space="preserve"><value>Normalkan Beban Sistem</value></data>
+
+  <data name="Ctl_EventGroup" xml:space="preserve"><value>Simulasi Event &amp; Prioritas (Tahap 2)</value></data>
+  <data name="Ctl_EventHint" xml:space="preserve"><value>Uji respon hierarki prioritas state machine:</value></data>
+  <data name="Ctl_SimError" xml:space="preserve"><value>Simulasikan Error (Failed - Prioritas Tinggi)</value></data>
+  <data name="Ctl_SimWaiting" xml:space="preserve"><value>Simulasikan Butuh Respons (Waiting)</value></data>
+  <data name="Ctl_SimWork" xml:space="preserve"><value>Simulasikan Kerja Komputer (Running)</value></data>
+  <data name="Ctl_SimNotification" xml:space="preserve"><value>Kirim Notifikasi (Waving 1x)</value></data>
+  <data name="Ctl_SimSuccess" xml:space="preserve"><value>Tugas Selesai (Jumping 1x)</value></data>
+  <data name="Ctl_ResetSimulations" xml:space="preserve"><value>Reset Semua Simulasi Event</value></data>
+
+  <data name="Ctl_IpcGroup" xml:space="preserve"><value>Integrasi Aplikasi &amp; IPC Named Pipe (Tahap 4)</value></data>
+  <data name="Ctl_IpcHint" xml:space="preserve"><value>Komunikasi antar-proses (IPC) Named Pipe untuk event build, test, error, dan notifikasi:</value></data>
+  <data name="Ctl_IpcServer" xml:space="preserve"><value>Server Named Pipe (\\.\pipe\DesktopPetIpc)</value></data>
+  <data name="Ctl_EventType" xml:space="preserve"><value>Tipe Event:</value></data>
+  <data name="Ctl_EventStart" xml:space="preserve"><value>start (Pekerjaan Dimulai - Running)</value></data>
+  <data name="Ctl_EventSuccess" xml:space="preserve"><value>success (Pekerjaan Selesai - Jumping)</value></data>
+  <data name="Ctl_EventError" xml:space="preserve"><value>error (Proses Gagal - Failed)</value></data>
+  <data name="Ctl_EventNeedsAction" xml:space="preserve"><value>needs_action (Butuh Tindakan - Waiting)</value></data>
+  <data name="Ctl_EventNotify" xml:space="preserve"><value>notify (Notifikasi Info - Waving)</value></data>
+  <data name="Ctl_EventClear" xml:space="preserve"><value>clear (Bersihkan Balon &amp; Reset)</value></data>
+  <data name="Ctl_NotificationTitle" xml:space="preserve"><value>Judul Notifikasi:</value></data>
+  <data name="Ctl_SampleTitle" xml:space="preserve"><value>Build Berhasil</value></data>
+  <data name="Ctl_NotificationMessage" xml:space="preserve"><value>Pesan Notifikasi / Balon:</value></data>
+  <data name="Ctl_SampleMessage" xml:space="preserve"><value>Kompilasi proyek DesktopPet selesai dalam 1.2 detik.</value></data>
+  <data name="Ctl_ActionButton" xml:space="preserve"><value>Tombol Aksi (Opsional):</value></data>
+  <data name="Ctl_SampleAction" xml:space="preserve"><value>Lihat Hasil</value></data>
+  <data name="Ctl_BubbleDuration" xml:space="preserve"><value>Durasi Balon (detik, 0 = tetap):</value></data>
+  <data name="Ctl_SendIpc" xml:space="preserve"><value>🚀 Kirim Event IPC (Simulasi Client Pipe)</value></data>
+  <data name="Ctl_IpcSending" xml:space="preserve"><value>Mengirim pesan via named pipe...</value></data>
+  <data name="Ctl_IpcResponse" xml:space="preserve"><value>Respons Pipe: {0} - {1}</value></data>
+  <data name="Ctl_IpcSentNoReply" xml:space="preserve"><value>Pesan terkirim (tanpa teks balasan).</value></data>
+  <data name="Ctl_IpcConnectFailed" xml:space="preserve"><value>Gagal terhubung ke pipe: {0}</value></data>
+  <data name="Ctl_ProcessWatcher" xml:space="preserve"><value>Pantau Proses Otomatis (Process Watcher)</value></data>
+  <data name="Ctl_WatchedList" xml:space="preserve"><value>Daftar proses target yang dipantau (start &amp; exit code):</value></data>
+  <data name="Ctl_Add" xml:space="preserve"><value>Tambah</value></data>
+  <data name="Ctl_Remove" xml:space="preserve"><value>Hapus</value></data>
+
+  <data name="Ctl_AnimGroup" xml:space="preserve"><value>9 Animasi Utama (Manual Test — Terkunci dari Gaze)</value></data>
+  <data name="Ctl_AnimHint" xml:space="preserve"><value>Klik salah satu animasi di bawah untuk memutarnya terus-menerus:</value></data>
+  <data name="Ctl_Anim0" xml:space="preserve"><value>0. Idle (Diam Berdiri)</value></data>
+  <data name="Ctl_Anim1" xml:space="preserve"><value>1. Berlari ke Kanan</value></data>
+  <data name="Ctl_Anim2" xml:space="preserve"><value>2. Berlari ke Kiri</value></data>
+  <data name="Ctl_Anim3" xml:space="preserve"><value>3. Waving (Lambaikan Tangan)</value></data>
+  <data name="Ctl_Anim4" xml:space="preserve"><value>4. Jumping (Melompat Ceria)</value></data>
+  <data name="Ctl_Anim5" xml:space="preserve"><value>5. Failed (Sedih / Error)</value></data>
+  <data name="Ctl_Anim6" xml:space="preserve"><value>6. Waiting (Bertanya / Menunggu)</value></data>
+  <data name="Ctl_Anim7" xml:space="preserve"><value>7. PC Task Running (Semangat)</value></data>
+  <data name="Ctl_Anim8" xml:space="preserve"><value>8. Review (Mengetik Aktif)</value></data>
+  <data name="Ctl_ResumeAuto" xml:space="preserve"><value>▶️ Kembali ke Mode Otomatis (State Machine)</value></data>
+
+  <data name="Ctl_GazeGroup" xml:space="preserve"><value>16 Arah Pandang (Manual Test)</value></data>
+  <data name="Ctl_GazeRow9" xml:space="preserve"><value>Baris 9: 0° s/d 157.5°</value></data>
+  <data name="Ctl_GazeRow10" xml:space="preserve"><value>Baris 10: 180° s/d 337.5°</value></data>
+  <data name="Ctl_Gaze0" xml:space="preserve"><value>0° (Atas)</value></data>
+  <data name="Ctl_Gaze45" xml:space="preserve"><value>45° (Ka-Atas)</value></data>
+  <data name="Ctl_Gaze90" xml:space="preserve"><value>90° (Kanan)</value></data>
+  <data name="Ctl_Gaze135" xml:space="preserve"><value>135° (Ka-Bwh)</value></data>
+  <data name="Ctl_Gaze180" xml:space="preserve"><value>180° (Bawah)</value></data>
+  <data name="Ctl_Gaze225" xml:space="preserve"><value>225° (Ki-Bwh)</value></data>
+  <data name="Ctl_Gaze270" xml:space="preserve"><value>270° (Kiri)</value></data>
+  <data name="Ctl_Gaze315" xml:space="preserve"><value>315° (Ki-Atas)</value></data>
+
+  <data name="Ctl_SkinGroup" xml:space="preserve"><value>Skin / Paket Sprite</value></data>
+  <data name="Ctl_OpenSkinsFolder" xml:space="preserve"><value>Buka Folder Skins</value></data>
+  <data name="Ctl_ReloadSkins" xml:space="preserve"><value>Muat Ulang Daftar</value></data>
+  <data name="Ctl_SkinUnusable" xml:space="preserve"><value>Tidak bisa dipakai: {0}</value></data>
+  <data name="Ctl_SkinBuiltInSource" xml:space="preserve"><value>bawaan aplikasi</value></data>
+  <data name="Ctl_SkinCellSize" xml:space="preserve"><value>sel {0}×{1} px</value></data>
+  <data name="Ctl_SkinNotApplied" xml:space="preserve"><value>Belum diterapkan</value></data>
+  <data name="Ctl_SkinLoading" xml:space="preserve"><value>Memuat {0}...</value></data>
+
+  <data name="Ctl_BehaviorGroup" xml:space="preserve"><value>Opsi Perilaku &amp; Aksesibilitas</value></data>
+  <data name="Ctl_Language" xml:space="preserve"><value>Bahasa:</value></data>
+  <data name="Ctl_ReducedMotion" xml:space="preserve"><value>Reduced Motion (Tanpa lari/perpindahan: wander, drag, kerja bolak-balik)</value></data>
+  <data name="Ctl_AutoWander" xml:space="preserve"><value>Auto Wander (Pet sesekali jalan-jalan otomatis)</value></data>
+  <data name="Ctl_WorkStyleLabel" xml:space="preserve"><value>Gaya animasi saat komputer bekerja:</value></data>
+  <data name="Ctl_WorkStatic" xml:space="preserve"><value>Statis di tempat</value></data>
+  <data name="Ctl_WorkPacing" xml:space="preserve"><value>Berlari bolak-balik</value></data>
+  <data name="Ctl_GazeTracking" xml:space="preserve"><value>Gaze Tracking (Arah pandang ikuti mouse saat netral)</value></data>
+  <data name="Ctl_TypingDetection" xml:space="preserve"><value>Deteksi Mengetik (Mengetik memicu Review)</value></data>
+  <data name="Ctl_ResourceMonitoring" xml:space="preserve"><value>Resource Monitoring Aktif (CPU &amp; RAM Sampling)</value></data>
+  <data name="Ctl_ShowBadges" xml:space="preserve"><value>Tampilkan Indikator Beban (Keringat / Badge)</value></data>
+
+  <data name="Ctl_SystemGroup" xml:space="preserve"><value>Distribusi, Multi-Monitor &amp; Sistem (Tahap 5)</value></data>
+  <data name="Ctl_StartWithWindows" xml:space="preserve"><value>Mulai Otomatis bersama Windows (Auto-Start Run)</value></data>
+  <data name="Ctl_DpiInfo" xml:space="preserve"><value>Resolusi &amp; DPI: {0:0}% ({1:0} DPI) | Mode: PerMonitorV2</value></data>
+  <data name="Ctl_MonitorsInfo" xml:space="preserve"><value>Monitor Aktif: {0} Layar Terdeteksi (Utama: {1}x{2})</value></data>
+  <data name="Ctl_RecoverDisplays" xml:space="preserve"><value>Uji Pemulihan Multi-Monitor</value></data>
+  <data name="Ctl_OpenDataFolder" xml:space="preserve"><value>Buka Folder Data/Pengaturan</value></data>
+  <data name="Ctl_RecoverTitle" xml:space="preserve"><value>Pemulihan Multi-Monitor</value></data>
+  <data name="Ctl_RecoverDone" xml:space="preserve"><value>Posisi Pet berhasil diselaraskan pada koordinat X={0:0}, Y={1:0} di area monitor aktif.</value></data>
+  <data name="Ctl_OpenDataFolderFailed" xml:space="preserve"><value>Gagal membuka folder data: {0}</value></data>
+
+  <data name="Ctl_SizeGroup" xml:space="preserve"><value>Pengaturan Ukuran &amp; Kontrol</value></data>
+  <data name="Ctl_Scale" xml:space="preserve"><value>Skala:</value></data>
+  <data name="Ctl_WalkRight" xml:space="preserve"><value>Jalan ke Kanan</value></data>
+  <data name="Ctl_WalkLeft" xml:space="preserve"><value>Jalan ke Kiri</value></data>
+  <data name="Ctl_ExitApp" xml:space="preserve"><value>Tutup Aplikasi Desktop Pet</value></data>
+</root>

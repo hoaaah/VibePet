@@ -1,4 +1,5 @@
 using System.Text.Json;
+using DesktopPet.Localization;
 
 namespace DesktopPet.Models;
 
@@ -58,7 +59,7 @@ public sealed record SkinInfo(
         get
         {
             string label = Author == null ? DisplayName : $"{DisplayName} — {Author}";
-            if (IsBuiltIn) label += " (bawaan)";
+            if (IsBuiltIn) label += " " + Loc.T("Skin_BuiltInSuffix");
             if (Error != null) label += " ⚠";
             return label;
         }

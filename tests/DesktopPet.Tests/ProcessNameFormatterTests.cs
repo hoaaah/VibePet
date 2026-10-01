@@ -3,6 +3,7 @@ using Xunit;
 
 namespace DesktopPet.Tests;
 
+[Collection(LocalizationCollection.Name)]
 public class ProcessNameFormatterTests
 {
     [Theory]
