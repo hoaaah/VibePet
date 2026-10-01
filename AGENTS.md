@@ -35,7 +35,7 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
   1. *Nama Proses & Dokumen Aktif (Selesai, unit test + uji proses nyata):* PID diganti identitas `ProcessIdentity` = nama aplikasi + project/dokumen yang dibuka (misal `Visual Studio Code — pet-ag (AGENTS.md)`, `Microsoft Word — Laporan.docx`, `Node.js — server.js`, `.NET CLI — build`) pada balon notifikasi dan tooltip tray. Proses pembantu (anak dari proses bernama sama atau ber-argumen `--type=`) tidak memicu balon maupun animasi gagal; proses yang terdeteksi dalam satu scan (termasuk saat pet dibuka) digabung menjadi satu balon ringkasan; tooltip tray menampilkan satu aplikasi per baris dalam batas 63 karakter. Daftar default watcher diperluas dengan `gitkraken`, `claude`, `codex`, `agy`, `winword`, `msedge`. 93 unit tests lulus 100%. Verifikasi visual balon dan tooltip di aplikasi berjalan belum dilakukan.
   2. *Interactive Drag Movement (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Animasi berlari ke kiri (`RunningLeft`) atau kanan (`RunningRight`) mengikuti arah seretan, pose ditahan saat kursor diam 180 ms, menghormati `ReducedMotion`, disusul `Jumping` setelah dilepas. 104 unit tests lulus 100%.
   3. *Animasi Kerja Dinamis (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Saat ComputerWork, pet berlari bolak-balik ±70 DIP di sekitar posisinya (toggle *Statis* / *Bolak-balik* di Panel Kontrol & context menu, default bolak-balik). Status kerja kini gabungan sumber terpisah (CPU, IPC, proses, simulasi); proses hanya dihitung bekerja bila tool CLI/build/agent yang dipantau sedang memakai CPU. 125 unit tests lulus 100%.
-  4. *Multi-Skin / Sprite Packs System:* Penyimpanan dan pemilihan paket sprite kustom dari `%AppData%\DesktopPet\Skins\` dengan *hot-swap* langsung dari Panel Kontrol & Context Menu tanpa restart.
+  4. *Multi-Skin / Sprite Packs System (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Skin PNG RGBA dari `%AppData%\DesktopPet\Skins\<id>\` (`spritesheet.png` + `skin.json` opsional) dengan *hot-swap* dari Panel Kontrol & context menu tanpa restart. Skrip `scripts/import-codex-pet.ps1` mengonversi pet Codex (WebP) ke PNG. 147 unit tests lulus 100%.
 
 ## Stack yang direncanakan
 
@@ -62,6 +62,8 @@ WPF dipilih karena target khusus Windows dan kebutuhan integrasi OS. Tauri + Typ
 - Siapkan PNG transparan turunan untuk runtime WPF agar tidak bergantung pada decoder WebP tambahan. Konversi harus mempertahankan alpha dan ukuran atlas.
 - Decode dan cache frame sekali saat pemuatan. Jangan membaca file atau memotong ulang gambar pada setiap tick.
 - Validasi dimensi dan alpha aset pada awal implementasi; jangan mengubah atlas agar cocok dengan asumsi renderer yang keliru.
+- Skin kustom (Tahap 6.4) memakai kontrak baris yang sama. Hanya ukuran sel, jumlah frame (1–8), durasi (40–2000 ms), dan loop yang bisa diubah lewat `skin.json`; `waving`/`jumping` selalu sekali putar karena state machine menunggu selesainya.
+- WebP tidak didukung saat runtime: decoder WIC bawaan Windows mengembalikan `Bgr32` (alpha hilang; diuji pada `~/.codex/pets/kawahime/spritesheet.webp`). Konversi ke PNG RGBA terlebih dahulu.
 
 ### Pemetaan animasi ke perilaku aplikasi
 
@@ -222,6 +224,15 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
    - Layanan manajer skin (`SkinManagerService`) untuk memindai skin bawaan dan folder skin kustom pengguna.
    - Fitur *hot-swap* instan: pemotongan ulang frame ke memori secara dinamis saat skin dipilih dari dropdown Panel Kontrol atau Context Menu tanpa me-restart aplikasi.
    - Tombol *"Buka Folder Skins"* di Panel Kontrol untuk memudahkan pengguna menambahkan atlas sprite baru.
+   - Implementasi:
+     - `SkinManifest` (`Models/SkinManifest.cs`): `skin.json` dengan field opsional `name`, `author`, `description`, `spritesheet`, `cellWidth`, `cellHeight`, `animations.<kunci>.{frames,durations,loop}`; parser toleran (case-insensitive, komentar, trailing comma). `AnimationCatalog.BuildDefinitions` menggabungkan override dengan nilai bawaan dan mencatat peringatan untuk nilai yang diperbaiki.
+     - `SpriteSet` (`Services/SpriteSet.cs`): satu skin yang sudah dipotong; setiap sel disalin ke bitmap beku sendiri (`CopyPixels`), sehingga atlas penuh bisa dilepas dan render tidak memotong ulang. `ValidateSheet` menolak atlas yang lebih kecil dari 8×11 sel atau tanpa alpha.
+     - `SpriteSheetManager` menyimpan `Current` + `BuiltIn`; `Apply()` mengganti skin dan memicu `SkinChanged`. `SpritePlayer` memuat ulang frame untuk state yang sama (indeks frame, callback one-shot, dan status pause dipertahankan; gaze tetap gaze).
+     - `SkinManagerService`: `Scan()` (bawaan `kawahime` + `skins/<folder>`, folder rusak ditampilkan dengan alasannya: JSON tidak valid, PNG hilang, bukan PNG, path di luar folder), `LoadAsync()` (decode di thread background, file tidak dikunci, maks 64 MB), `OpenSkinsFolder()` (membuat folder + `README.txt` + `skin.example.json`).
+     - `MainWindow.ApplySkinAsync`: hanya permintaan terakhir yang diterapkan, ukuran jendela mengikuti ukuran sel skin, gagal → skin lama tetap + balon error. Skin tersimpan di `settings.json` (`SelectedSkin`) dan diterapkan di latar belakang saat startup setelah skin bawaan tampil.
+     - UI: GroupBox "Skin / Paket Sprite" di Panel Kontrol (dropdown, status ukuran sel/peringatan/error, Buka Folder Skins, Muat Ulang Daftar) dan submenu "Skin" di context menu (dipindai ulang setiap dibuka).
+     - `scripts/import-codex-pet.ps1`: tanpa `-Name` menampilkan pet di `~/.codex/pets`; dengan `-Name` mengonversi WebP → PNG RGBA memakai `dwebp`/`magick`/`ffmpeg`, menulis `skin.json` dari `pet.json`, lalu memvalidasi ukuran dan alpha dengan decoder WPF. Di mesin pengguna belum ada tool konversi, sehingga jalur konversi nyata belum diuji (daftar pet dan pesan "tool belum terpasang" sudah diuji).
+   - Verifikasi: 22 unit test baru (atlas sintetis dengan penanda per sel memastikan tiap frame dan pose gaze diambil dari baris/kolom yang benar pada ukuran sel non-default, penolakan PNG tanpa alpha, hot-swap `SpritePlayer`). Skin 2× (atlas 3072×4576, sel 384×416) dari atlas bawaan berhasil dimuat via `SkinManagerService` dalam 114 ms dengan sudut frame transparan. Benchmark RAM/CPU Tahap 3 belum diukur ulang setelah frame diubah menjadi bitmap salinan per sel.
 
 ## Verifikasi dan kriteria keberhasilan
 

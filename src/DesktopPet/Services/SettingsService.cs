@@ -13,6 +13,7 @@ public class PetSettings
     public double Scale { get; set; } = 1.0;
     public bool ReducedMotion { get; set; } = false;
     public bool AutoWander { get; set; } = true;
+    public string SelectedSkin { get; set; } = SkinManagerService.BuiltInSkinId;
     [JsonConverter(typeof(JsonStringEnumConverter<WorkAnimationStyle>))]
     public WorkAnimationStyle WorkAnimationStyle { get; set; } = WorkAnimationStyle.Pacing;
     public bool GazeTracking { get; set; } = true;

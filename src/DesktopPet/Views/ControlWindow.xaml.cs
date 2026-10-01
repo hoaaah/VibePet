@@ -56,6 +56,7 @@ public partial class ControlWindow : Window
         ChkReducedMotion.IsChecked = settings.ReducedMotion;
         ChkAutoWander.IsChecked = settings.AutoWander;
         SyncWorkAnimationStyle(settings.WorkAnimationStyle);
+        RefreshSkinList();
         ChkGazeTracking.IsChecked = settings.GazeTracking;
         ChkTypingDetection.IsChecked = settings.TypingDetection;
         ChkResourceMonitoring.IsChecked = settings.ResourceMonitoring;
@@ -355,6 +356,88 @@ public partial class ControlWindow : Window
     {
         bool val = ChkAutoWander.IsChecked == true;
         _mainWindow.SetAutoWander(val);
+    }
+
+    // --- Skins (Tahap 6.4) ---
+    private bool _suppressSkinSelection;
+
+    private void RefreshSkinList()
+    {
+        var skins = _mainWindow.SkinManager.Scan();
+        _suppressSkinSelection = true;
+        CmbSkins.ItemsSource = skins;
+        _suppressSkinSelection = false;
+        SyncSelectedSkin(SpriteSheetManager.Instance.Current.Skin.Id, allowRescan: false);
+    }
+
+    /// <summary>
+    /// Select the active skin without triggering a reload (also called by MainWindow after a swap).
+    /// </summary>
+    public void SyncSelectedSkin(string skinId, bool allowRescan = true)
+    {
+        if (CmbSkins.ItemsSource is not IEnumerable<SkinInfo> skins) return;
+
+        var active = skins.FirstOrDefault(s => s.Id.Equals(skinId, StringComparison.OrdinalIgnoreCase));
+        if (active == null)
+        {
+            // A folder appeared since the last scan (e.g. skin chosen from the context menu)
+            if (allowRescan) RefreshSkinList();
+            return;
+        }
+
+        _suppressSkinSelection = true;
+        CmbSkins.SelectedItem = active;
+        _suppressSkinSelection = false;
+        UpdateSkinStatus(active);
+    }
+
+    private void UpdateSkinStatus(SkinInfo? skin)
+    {
+        if (skin == null)
+        {
+            TxtSkinStatus.Text = "";
+            return;
+        }
+
+        if (skin.Error != null)
+        {
+            TxtSkinStatus.Foreground = MediaBrushes.IndianRed;
+            TxtSkinStatus.Text = $"Tidak bisa dipakai: {skin.Error}";
+            return;
+        }
+
+        var current = SpriteSheetManager.Instance.Current;
+        bool isActive = current.Skin.Id.Equals(skin.Id, StringComparison.OrdinalIgnoreCase);
+        string source = skin.IsBuiltIn ? "bawaan aplikasi" : skin.Directory ?? "";
+        string size = isActive ? $"sel {current.CellWidth}×{current.CellHeight} px · " : "";
+        string warnings = isActive && current.Warnings.Count > 0 ? $"\nCatatan: {string.Join(" ", current.Warnings)}" : "";
+
+        TxtSkinStatus.Foreground = isActive ? MediaBrushes.LightGreen : new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xA6, 0xAD, 0xC8));
+        TxtSkinStatus.Text = $"{(isActive ? "Aktif" : "Belum diterapkan")} · {size}{source}{warnings}";
+    }
+
+    private async void CmbSkins_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressSkinSelection || CmbSkins.SelectedItem is not SkinInfo skin) return;
+
+        UpdateSkinStatus(skin);
+        if (skin.Error != null)
+        {
+            return;
+        }
+
+        TxtSkinStatus.Text = $"Memuat {skin.DisplayName}...";
+        await _mainWindow.ApplySkinAsync(skin.Id);
+    }
+
+    private void BtnOpenSkinsFolder_Click(object sender, RoutedEventArgs e)
+    {
+        _mainWindow.OpenSkinsFolder();
+    }
+
+    private void BtnReloadSkins_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshSkinList();
     }
 
     private void RbWorkStyle_Click(object sender, RoutedEventArgs e)

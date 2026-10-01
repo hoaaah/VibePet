@@ -29,6 +29,34 @@ public class SpritePlayer
         _manager = manager;
         _timer = new DispatcherTimer(DispatcherPriority.Render);
         _timer.Tick += OnTimerTick;
+        _manager.SkinChanged += OnSkinChanged;
+    }
+
+    /// <summary>
+    /// Hot-swap: keep the current state, frame position, one-shot callback and pause status,
+    /// only the pixels (and frame timing) come from the new skin.
+    /// </summary>
+    private void OnSkinChanged(SpriteSet _)
+    {
+        if (IsStaticGaze && CurrentGaze is GazeDirection gaze)
+        {
+            FrameUpdated?.Invoke(_manager.GetGazeFrame(gaze));
+            return;
+        }
+
+        if (_currentDef == null) return;
+
+        _currentDef = _manager.GetDefinition(_currentState);
+        _currentFrames = _manager.GetAnimationFrames(_currentState);
+        if (_currentFrames.Length == 0) return;
+
+        _currentFrameIndex = Math.Min(_currentFrameIndex, _currentFrames.Length - 1);
+        FrameUpdated?.Invoke(_currentFrames[_currentFrameIndex]);
+
+        if (_timer.IsEnabled)
+        {
+            _timer.Interval = TimeSpan.FromMilliseconds(_currentDef.GetDuration(_currentFrameIndex));
+        }
     }
 
     public void PlayAnimation(PetAnimationState state, Action? onCompleted = null)
@@ -39,7 +67,7 @@ public class SpritePlayer
         }
 
         _currentState = state;
-        _currentDef = AnimationCatalog.Animations[state];
+        _currentDef = _manager.GetDefinition(state);
         _currentFrames = _manager.GetAnimationFrames(state);
         _currentFrameIndex = 0;
         _onCompletedCallback = onCompleted;

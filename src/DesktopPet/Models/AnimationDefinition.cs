@@ -105,6 +105,85 @@ public static class AnimationCatalog
             )
         };
 
+    public const int MinFrameDurationMs = 40;
+    public const int MaxFrameDurationMs = 2000;
+
+    /// <summary>
+    /// Nama kunci animasi di skin.json, misal "running-right", "Running_Right", "runningright".
+    /// </summary>
+    public static bool TryParseStateKey(string key, out PetAnimationState state)
+    {
+        string normalized = key.Replace("-", "").Replace("_", "").Replace(" ", "");
+        if (Enum.TryParse(normalized, ignoreCase: true, out state)
+            && state != PetAnimationState.Gaze
+            && Enum.IsDefined(state)
+            && !int.TryParse(normalized, out _))
+        {
+            return true;
+        }
+        state = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Definisi animasi untuk satu skin: nilai bawaan ditimpa override dari skin.json.
+    /// Baris atlas tidak bisa diubah; jumlah frame dijepit 1–8 dan durasi 40–2000 ms.
+    /// </summary>
+    public static IReadOnlyDictionary<PetAnimationState, AnimationDefinition> BuildDefinitions(
+        SkinManifest? manifest, ICollection<string>? warnings = null)
+    {
+        var result = new Dictionary<PetAnimationState, AnimationDefinition>(Animations);
+        if (manifest?.Animations == null) return result;
+
+        foreach (var (key, ov) in manifest.Animations)
+        {
+            if (ov == null) continue;
+            if (!TryParseStateKey(key, out var state))
+            {
+                warnings?.Add($"Animasi '{key}' tidak dikenal, diabaikan.");
+                continue;
+            }
+
+            var baseDef = Animations[state];
+
+            int frames = ov.Frames ?? baseDef.FrameCount;
+            if (frames < 1 || frames > SheetColumns)
+            {
+                warnings?.Add($"'{key}': frames {frames} di luar 1–{SheetColumns}, dijepit.");
+                frames = Math.Clamp(frames, 1, SheetColumns);
+            }
+
+            int[] sourceDurations = ov.Durations is { Length: > 0 } custom ? custom : baseDef.FrameDurationsMs;
+            if (ov.Durations is { Length: > 0 } && ov.Durations.Length != frames)
+            {
+                warnings?.Add($"'{key}': {ov.Durations.Length} durasi untuk {frames} frame, disesuaikan.");
+            }
+
+            // Resize to the frame count by truncating or repeating the last duration
+            var durations = Enumerable.Range(0, frames)
+                .Select(i => sourceDurations[Math.Min(i, sourceDurations.Length - 1)])
+                .Select(d => Math.Clamp(d, MinFrameDurationMs, MaxFrameDurationMs))
+                .ToArray();
+
+            bool loop = ov.Loop ?? baseDef.IsLooping;
+            if (!baseDef.IsLooping && loop)
+            {
+                // PetStateMachine waits for one-shot animations (waving, jumping) to complete
+                warnings?.Add($"'{key}' harus diputar sekali; 'loop: true' diabaikan.");
+                loop = false;
+            }
+
+            result[state] = baseDef with
+            {
+                FrameIndices = Enumerable.Range(0, frames).ToArray(),
+                FrameDurationsMs = durations,
+                IsLooping = loop,
+            };
+        }
+
+        return result;
+    }
+
     public static (int row, int col) GetGazeCell(GazeDirection direction)
     {
         int index = (int)direction;

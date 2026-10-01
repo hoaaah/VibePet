@@ -16,6 +16,10 @@
             <MenuItem Header="Animasi" x:Name="MenuAnimations"/>
             <MenuItem Header="Arah Pandang" x:Name="MenuGaze"/>
             <MenuItem Header="Ukuran Pet" x:Name="MenuScale"/>
+            <MenuItem Header="Skin" x:Name="MenuSkins" SubmenuOpened="MenuSkins_SubmenuOpened">
+                <!-- Placeholder so the submenu arrow shows; rebuilt from the Skins folder on open -->
+                <MenuItem Header="Memuat..." IsEnabled="False"/>
+            </MenuItem>
             <MenuItem Header="Opsi Perilaku" x:Name="MenuBehavior"/>
             <Separator/>
             <MenuItem Header="Panel Kontrol &amp; Tester..." Click="MenuOpenControl_Click"/>

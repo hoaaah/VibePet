@@ -283,6 +283,20 @@
                 </StackPanel>
             </GroupBox>
 
+            <!-- Skins / Sprite Packs (Tahap 6.4) -->
+            <GroupBox Header="Skin / Paket Sprite">
+                <StackPanel>
+                    <ComboBox x:Name="CmbSkins" DisplayMemberPath="ListLabel"
+                              Background="#313244" Foreground="#11111B" BorderBrush="#45475A" Margin="3"
+                              SelectionChanged="CmbSkins_SelectionChanged"/>
+                    <TextBlock x:Name="TxtSkinStatus" Text="" TextWrapping="Wrap" FontSize="11" Foreground="#A6ADC8" Margin="4,2,4,4"/>
+                    <WrapPanel>
+                        <Button Content="Buka Folder Skins" Click="BtnOpenSkinsFolder_Click"/>
+                        <Button Content="Muat Ulang Daftar" Click="BtnReloadSkins_Click"/>
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
             <!-- Behavioral Settings -->
             <GroupBox Header="Opsi Perilaku &amp; Aksesibilitas">
                 <StackPanel>

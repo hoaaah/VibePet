@@ -31,6 +31,10 @@ public partial class MainWindow : Window
     private ControlWindow? _controlWindow;
     private TrayIconManager? _trayManager;
     private MenuItem? _itemWorkPacing;
+    private readonly SkinManagerService _skinManager = new();
+    private int _skinRequestId;
+
+    public SkinManagerService SkinManager => _skinManager;
 
     private double _currentScale = 1.0;
     private bool _isDragging = false;
@@ -137,6 +141,127 @@ public partial class MainWindow : Window
 
         // Start default state evaluation
         _stateMachine.EvaluateState();
+
+        // The built-in skin is already showing; swap to the saved custom skin in the background
+        string savedSkin = _settingsService.Settings.SelectedSkin;
+        if (!string.IsNullOrWhiteSpace(savedSkin) &&
+            !savedSkin.Equals(SkinManagerService.BuiltInSkinId, StringComparison.OrdinalIgnoreCase))
+        {
+            _ = ApplySkinAsync(savedSkin, announce: false, persist: false);
+        }
+    }
+
+    /// <summary>
+    /// Loads a skin off the UI thread and hot-swaps it. Overlapping requests: only the latest is applied.
+    /// On failure the current skin stays and an error bubble explains why.
+    /// </summary>
+    public async Task<bool> ApplySkinAsync(string skinId, bool announce = true, bool persist = true)
+    {
+        int requestId = ++_skinRequestId;
+
+        SpriteSet? spriteSet;
+        SkinInfo? skin;
+        string? error = null;
+
+        if (skinId.Equals(SkinManagerService.BuiltInSkinId, StringComparison.OrdinalIgnoreCase) && _sheetManager.BuiltIn != null)
+        {
+            spriteSet = _sheetManager.BuiltIn;
+            skin = spriteSet.Skin;
+        }
+        else
+        {
+            skin = _skinManager.Find(skinId);
+            if (skin == null)
+            {
+                spriteSet = null;
+                error = $"Skin '{skinId}' tidak ditemukan di {_skinManager.SkinsDirectory}.";
+            }
+            else
+            {
+                var result = await _skinManager.LoadAsync(skin);
+                spriteSet = result.SpriteSet;
+                error = result.Error;
+            }
+        }
+
+        if (requestId != _skinRequestId) return false; // superseded by a newer selection
+
+        if (spriteSet == null)
+        {
+            ShowSpeechBubble(
+                "Skin Gagal Dimuat",
+                $"{skin?.DisplayName ?? skinId}: {error} Tetap memakai {_sheetManager.Current.Skin.DisplayName}.",
+                timeoutSeconds: 10,
+                type: "error");
+            _controlWindow?.SyncSelectedSkin(_sheetManager.Current.Skin.Id);
+            return false;
+        }
+
+        _sheetManager.Apply(spriteSet);
+        SetScale(_currentScale); // also saves settings
+
+        if (persist)
+        {
+            _settingsService.Settings.SelectedSkin = spriteSet.Skin.Id;
+            _settingsService.Save();
+        }
+
+        _controlWindow?.SyncSelectedSkin(spriteSet.Skin.Id);
+
+        if (announce)
+        {
+            string message = spriteSet.Skin.Author == null
+                ? $"Sekarang memakai {spriteSet.Skin.DisplayName}."
+                : $"Sekarang memakai {spriteSet.Skin.DisplayName} oleh {spriteSet.Skin.Author}.";
+            if (spriteSet.Warnings.Count > 0)
+            {
+                message += " Catatan: " + string.Join(" ", spriteSet.Warnings);
+            }
+            ShowSpeechBubble("Skin Diganti", message, timeoutSeconds: spriteSet.Warnings.Count > 0 ? 10 : 4, type: "notify");
+        }
+
+        return true;
+    }
+
+    private void MenuSkins_SubmenuOpened(object sender, RoutedEventArgs e)
+    {
+        if (!ReferenceEquals(e.OriginalSource, MenuSkins)) return;
+
+        MenuSkins.Items.Clear();
+        string activeId = _sheetManager.Current.Skin.Id;
+
+        foreach (var skin in _skinManager.Scan())
+        {
+            var item = new MenuItem
+            {
+                Header = skin.ListLabel,
+                IsCheckable = false,
+                IsChecked = skin.Id.Equals(activeId, StringComparison.OrdinalIgnoreCase),
+                IsEnabled = skin.IsValid,
+                ToolTip = skin.Error ?? skin.Description,
+            };
+            ToolTipService.SetShowOnDisabled(item, true);
+            string targetId = skin.Id;
+            item.Click += async (s, args) => await ApplySkinAsync(targetId);
+            MenuSkins.Items.Add(item);
+        }
+
+        MenuSkins.Items.Add(new Separator());
+        var openFolder = new MenuItem { Header = "Buka Folder Skins..." };
+        openFolder.Click += (s, args) => OpenSkinsFolder();
+        MenuSkins.Items.Add(openFolder);
+    }
+
+    public void OpenSkinsFolder()
+    {
+        try
+        {
+            _skinManager.OpenSkinsFolder();
+        }
+        catch (Exception ex)
+        {
+            ShowSpeechBubble("Folder Skins", $"Tidak bisa membuka {_skinManager.SkinsDirectory}: {ex.Message}", timeoutSeconds: 8, type: "error");
+        }
     }
 
     private void OnFrameUpdated(System.Windows.Media.Imaging.BitmapSource frame)
@@ -449,8 +574,9 @@ public partial class MainWindow : Window
     public void SetScale(double scale)
     {
         _currentScale = Math.Clamp(scale, 0.5, 3.0);
-        double w = AnimationCatalog.CellWidth * _currentScale;
-        double h = AnimationCatalog.CellHeight * _currentScale;
+        // Window size follows the active skin's cell size
+        double w = _sheetManager.CellWidth * _currentScale;
+        double h = _sheetManager.CellHeight * _currentScale;
 
         PetImage.Width = w;
         PetImage.Height = h;
