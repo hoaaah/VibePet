@@ -33,6 +33,10 @@ public partial class MainWindow : Window
 
     private double _currentScale = 1.0;
     private bool _isDragging = false;
+    private readonly DragMotionTracker _dragTracker = new();
+    private readonly DispatcherTimer _dragStillnessTimer;
+    private double _lastDragLeft;
+    private double _lastDragTop;
 
     public MainWindow()
     {
@@ -57,6 +61,12 @@ public partial class MainWindow : Window
 
         _bubbleDismissTimer = new DispatcherTimer(DispatcherPriority.Background);
         _bubbleDismissTimer.Tick += (s, e) => HideSpeechBubble();
+
+        _dragStillnessTimer = new DispatcherTimer(DispatcherPriority.Render)
+        {
+            Interval = TimeSpan.FromMilliseconds(60)
+        };
+        _dragStillnessTimer.Tick += (s, e) => ApplyDragPose(_dragTracker.Tick(DragClock));
 
         BuildContextMenu();
     }
@@ -511,16 +521,28 @@ public partial class MainWindow : Window
             _isDragging = true;
             _stateMachine.SetDirectInteraction(true);
 
-            // Hold current pose during drag
+            // Hold current pose until the cursor actually moves
             _player.Pause();
+
+            _dragTracker.Begin(DragClock);
+            _lastDragLeft = Left;
+            _lastDragTop = Top;
+            LocationChanged += OnDragLocationChanged;
+            _dragStillnessTimer.Start();
 
             try
             {
+                // Windows' modal move loop; LocationChanged and timers keep firing while it runs
                 DragMove();
             }
             catch
             {
                 // DragMove can throw if mouse button was already released
+            }
+            finally
+            {
+                LocationChanged -= OnDragLocationChanged;
+                _dragStillnessTimer.Stop();
             }
 
             _isDragging = false;
@@ -535,6 +557,38 @@ public partial class MainWindow : Window
             {
                 _stateMachine.SetDirectInteraction(false);
             });
+        }
+    }
+
+    private static TimeSpan DragClock => TimeSpan.FromMilliseconds(Environment.TickCount64);
+
+    private void OnDragLocationChanged(object? sender, EventArgs e)
+    {
+        double deltaX = Left - _lastDragLeft;
+        double deltaY = Top - _lastDragTop;
+        _lastDragLeft = Left;
+        _lastDragTop = Top;
+
+        if (!_isDragging) return;
+        ApplyDragPose(_dragTracker.OnMoved(deltaX, deltaY, DragClock));
+    }
+
+    private void ApplyDragPose(DragPoseAction action)
+    {
+        // Reduced motion: keep the single held pose for the whole drag
+        if (_settingsService.Settings.ReducedMotion) return;
+
+        switch (action)
+        {
+            case DragPoseAction.PlayRunning when _dragTracker.Direction is PetAnimationState direction:
+                _player.PlayAnimation(direction);
+                break;
+            case DragPoseAction.ResumeRunning:
+                _player.Resume();
+                break;
+            case DragPoseAction.Hold:
+                _player.Pause();
+                break;
         }
     }
 

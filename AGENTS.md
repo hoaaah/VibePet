@@ -33,7 +33,7 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
 - Seluruh 5 tahapan pengembangan awal telah rampung 100%.
 - **Tahap 6 (Pengembangan Lanjutan):**
   1. *Nama Proses & Dokumen Aktif (Selesai, unit test + uji proses nyata):* PID diganti identitas `ProcessIdentity` = nama aplikasi + project/dokumen yang dibuka (misal `Visual Studio Code — pet-ag (AGENTS.md)`, `Microsoft Word — Laporan.docx`, `Node.js — server.js`, `.NET CLI — build`) pada balon notifikasi dan tooltip tray. Proses pembantu (anak dari proses bernama sama atau ber-argumen `--type=`) tidak memicu balon maupun animasi gagal; proses yang terdeteksi dalam satu scan (termasuk saat pet dibuka) digabung menjadi satu balon ringkasan; tooltip tray menampilkan satu aplikasi per baris dalam batas 63 karakter. Daftar default watcher diperluas dengan `gitkraken`, `claude`, `codex`, `agy`, `winword`, `msedge`. 93 unit tests lulus 100%. Verifikasi visual balon dan tooltip di aplikasi berjalan belum dilakukan.
-  2. *Interactive Drag Movement:* Animasi berlari ke kiri (`RunningLeft`) atau kanan (`RunningRight`) dinamis mengikuti arah seretan kursor pengguna, disusul lompatan gembira (`Jumping`) setelah dilepas.
+  2. *Interactive Drag Movement (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Animasi berlari ke kiri (`RunningLeft`) atau kanan (`RunningRight`) mengikuti arah seretan, pose ditahan saat kursor diam 180 ms, menghormati `ReducedMotion`, disusul `Jumping` setelah dilepas. 104 unit tests lulus 100%.
   3. *Animasi Kerja Dinamis:* Mengubah running komputer bekerja menjadi berlari aktif bolak-balik (kiri & kanan) atau mondar-mandir santai.
   4. *Multi-Skin / Sprite Packs System:* Penyimpanan dan pemilihan paket sprite kustom dari `%AppData%\DesktopPet\Skins\` dengan *hot-swap* langsung dari Panel Kontrol & Context Menu tanpa restart.
 
@@ -96,7 +96,7 @@ Sel yang tidak digunakan pada baris animasi harus diabaikan renderer.
 | CPU/GPU tinggi secara berkelanjutan | running dengan indikator kerja berat; efek keringat opsional |
 | Tekanan RAM tinggi | Indikator RAM; tidak otomatis dianggap error |
 | Beban kembali normal | Hilangkan indikator; pertahankan running bila pekerjaan belum selesai |
-| Pet sedang diseret | Tahan satu pose selama drag; respons jumping setelah dilepas |
+| Pet sedang diseret | Berlari ke arah seretan; tahan pose saat kursor diam atau bila reduced motion aktif; respons jumping setelah dilepas |
 | Detail error/notifikasi | Balon teks atau panel ringkas yang dapat ditindaklanjuti |
 
 Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumber dan harus dibuat terpisah bila diimplementasikan.
@@ -199,6 +199,10 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
      - `deltaX < 0` &rarr; Animasi `RunningLeft` (Baris 2).
      - `deltaX == 0` (kursor berhenti saat ditahan) &rarr; Menahan pose berjalan.
    - Saat mouse dilepas (mouse up), memicu animasi perayaan `Jumping` (Baris 4).
+   - Implementasi: drag tetap memakai `DragMove()` (loop pemindahan bawaan Windows, menangani DPI dan multi-monitor). Pergeseran dibaca dari `Window.LocationChanged`; timer 60 ms memeriksa kursor diam.
+   - `DragMotionTracker` (logika murni, teruji) memutuskan pose: arah pertama dari `deltaX` (ambang 0,5 DIP), arah baru hanya berlaku setelah pergeseran berlawanan terkumpul ≥ 6 DIP (anti-kedip), pose ditahan setelah 180 ms tanpa gerak, dan gerak vertikal melanjutkan arah terakhir.
+   - Selama drag `PetStateMachine` tetap di `DirectInteraction`, jadi gaze, wander, dan event lain tidak menimpa animasi drag.
+   - Belum diverifikasi visual: apakah `LocationChanged` dan timer berjalan mulus selama loop `DragMove()` di mesin pengguna.
 
 3. **Animasi Komputer Bekerja Berganti ke Berlari Kiri / Kanan (*Running Process Animation*):**
    - Menghubungkan state `ComputerWork` / `Running` dengan animasi berlari bolak-balik (*pacing / patrolling*) alih-alih berlari statis di tempat.
