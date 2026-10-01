@@ -14,6 +14,29 @@ public enum PetAnimationState
     Gaze = 9           // Rows 9-10: 16 directional poses
 }
 
+/// <summary>
+/// Cara pet memperlihatkan "komputer sedang bekerja".
+/// </summary>
+public enum WorkAnimationStyle
+{
+    Static = 0,   // Row 7 di tempat
+    Pacing = 1,   // Berlari bolak-balik kiri/kanan (Row 1/2) di sekitar posisi pet
+}
+
+/// <summary>
+/// Sumber yang membuat pet berada di state ComputerWork. Disimpan terpisah agar
+/// satu sumber (misal CPU kembali normal) tidak menghapus sumber lain (misal build masih berjalan).
+/// </summary>
+[Flags]
+public enum WorkSource
+{
+    None = 0,
+    Simulation = 1,
+    CpuLoad = 2,
+    Ipc = 4,
+    Process = 8,
+}
+
 public enum GazeDirection
 {
     // Row 9: 0° to 157.5° (clockwise, 0° is up)

@@ -34,7 +34,7 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
 - **Tahap 6 (Pengembangan Lanjutan):**
   1. *Nama Proses & Dokumen Aktif (Selesai, unit test + uji proses nyata):* PID diganti identitas `ProcessIdentity` = nama aplikasi + project/dokumen yang dibuka (misal `Visual Studio Code — pet-ag (AGENTS.md)`, `Microsoft Word — Laporan.docx`, `Node.js — server.js`, `.NET CLI — build`) pada balon notifikasi dan tooltip tray. Proses pembantu (anak dari proses bernama sama atau ber-argumen `--type=`) tidak memicu balon maupun animasi gagal; proses yang terdeteksi dalam satu scan (termasuk saat pet dibuka) digabung menjadi satu balon ringkasan; tooltip tray menampilkan satu aplikasi per baris dalam batas 63 karakter. Daftar default watcher diperluas dengan `gitkraken`, `claude`, `codex`, `agy`, `winword`, `msedge`. 93 unit tests lulus 100%. Verifikasi visual balon dan tooltip di aplikasi berjalan belum dilakukan.
   2. *Interactive Drag Movement (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Animasi berlari ke kiri (`RunningLeft`) atau kanan (`RunningRight`) mengikuti arah seretan, pose ditahan saat kursor diam 180 ms, menghormati `ReducedMotion`, disusul `Jumping` setelah dilepas. 104 unit tests lulus 100%.
-  3. *Animasi Kerja Dinamis:* Mengubah running komputer bekerja menjadi berlari aktif bolak-balik (kiri & kanan) atau mondar-mandir santai.
+  3. *Animasi Kerja Dinamis (Diimplementasikan, unit test lulus; belum diverifikasi visual):* Saat ComputerWork, pet berlari bolak-balik ±70 DIP di sekitar posisinya (toggle *Statis* / *Bolak-balik* di Panel Kontrol & context menu, default bolak-balik). Status kerja kini gabungan sumber terpisah (CPU, IPC, proses, simulasi); proses hanya dihitung bekerja bila tool CLI/build/agent yang dipantau sedang memakai CPU. 125 unit tests lulus 100%.
   4. *Multi-Skin / Sprite Packs System:* Penyimpanan dan pemilihan paket sprite kustom dari `%AppData%\DesktopPet\Skins\` dengan *hot-swap* langsung dari Panel Kontrol & Context Menu tanpa restart.
 
 ## Stack yang direncanakan
@@ -208,6 +208,14 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
    - Menghubungkan state `ComputerWork` / `Running` dengan animasi berlari bolak-balik (*pacing / patrolling*) alih-alih berlari statis di tempat.
    - Pet berlari ke kanan selama durasi tertentu, lalu berbalik ke kiri, menciptakan ilusi bekerja mondar-mandir yang lebih hidup.
    - Sediakan toggle mode gaya animasi kerja di Panel Kontrol: *Statis di tempat* vs *Berlari bolak-balik*.
+   - Implementasi:
+     - `WorkAnimationStyle` (`Static`/`Pacing`) tersimpan di `settings.json` sebagai string; diatur lewat radio button Panel Kontrol dan item context menu "Kerja: Berlari Bolak-balik".
+     - `PetMovementManager` memulai/menghentikan pacing lewat `SyncPacing()` (dipanggil tertunda dari `StateChanged`, tidak re-entrant). Pacing hanya berjalan bila prioritas teratas `ComputerWork`, tidak sedang drag/manual test, dan `ReducedMotion` mati. Rentang ±70 DIP dari posisi awal, dibatasi area kerja monitor tempat pet berada (`Screen.FromHandle` + transform DPI); bila ruang < 24 DIP, tetap animasi statis. Kecepatan 2,5 DIP per 30 ms.
+     - `PetStateMachine.SetWorkPacingDirection` memilih Row 1/2 untuk state ComputerWork; prioritas lebih tinggi (error, notifikasi, dll.) tetap menang.
+   - Perbaikan terkait status kerja (AGENTS.md aturan 5):
+     - Sebelumnya monitor CPU memanggil `SetComputerWork(false)` tiap sampel sehingga status kerja dari proses/IPC hilang dalam ±1 detik. Kini `WorkSource` (`CpuLoad`, `Ipc`, `Process`, `Simulation`) disimpan terpisah; ComputerWork aktif bila salah satu aktif. `ClearAllSimulations` tidak menghapus sumber hasil pengukuran (CPU, proses).
+     - IPC `start` mengaktifkan sumber `Ipc`; `success`/`error` mematikannya.
+     - `ProcessWatcherService.IsWorkActive`: tool CLI/build/agent yang dipantau (termasuk proses pembantunya) dianggap bekerja bila memakai ≥ 5% satu core CPU dalam satu tick, dipertahankan 4 detik setelah sampel sibuk terakhir. Aplikasi GUI (`code`, `winword`, `msedge`, `gitkraken`, dsb.) tidak pernah dihitung; event mulai proses kini hanya memunculkan balon. Diuji pada mesin pengguna: proses `node`/`claude`/`codex`/`agy` yang diam terukur 0% (tidak memicu), `dotnet build` terdeteksi sibuk selama build.
 
 4. **Sistem Paket Sprite Kustom (*Custom Sprite Packs / Skins*):**
    - Struktur direktori skin lokal: `%AppData%\DesktopPet\Skins\<NamaSkin>\` yang memuat `spritesheet.png` dan berkas opsional `skin.json` (metadata author, dimensi sel atlas, durasi frame).

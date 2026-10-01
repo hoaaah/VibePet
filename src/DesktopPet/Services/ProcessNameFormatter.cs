@@ -67,6 +67,15 @@ public static class ProcessNameFormatter
         ["antigravity"] = new("Antigravity", ["Antigravity"], WorkspaceLastInTitle: true),
     };
 
+    // Aplikasi GUI interaktif: penggunaan CPU-nya (render, tab browser) bukan "pekerjaan komputer",
+    // jadi hanya memunculkan balon, tidak memicu state ComputerWork.
+    private static readonly HashSet<string> InteractiveApps = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "code", "code - insiders", "cursor", "antigravity", "devenv",
+        "winword", "excel", "powerpnt", "notepad", "notepad++", "acrobat",
+        "explorer", "chrome", "msedge", "firefox", "gitkraken",
+    };
+
     // Segmen judul yang hanya status, bukan nama dokumen.
     private static readonly HashSet<string> TitleNoise = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -103,6 +112,12 @@ public static class ProcessNameFormatter
         }
         return clean;
     }
+
+    /// <summary>
+    /// True untuk tool CLI/build/agent (termasuk proses yang tidak dikenal): CPU-nya yang sibuk berarti komputer sedang bekerja.
+    /// </summary>
+    public static bool CountsAsWork(string processName) =>
+        !InteractiveApps.Contains(NormalizeProcessName(processName));
 
     public static string GetFriendlyAppName(string processName)
     {

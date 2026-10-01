@@ -26,7 +26,10 @@ public class PetStateMachine
     public bool HasNeedsAction { get; private set; }
     public bool HasNotification { get; private set; }
     public bool HasJobSuccess { get; private set; }
-    public bool HasComputerWork { get; private set; }
+    public WorkSource ActiveWorkSources { get; private set; }
+    public bool HasComputerWork => ActiveWorkSources != WorkSource.None;
+    /// <summary>Arah lari saat mode kerja bolak-balik aktif; null = animasi kerja statis (Row 7).</summary>
+    public PetAnimationState? WorkPacingDirection { get; private set; }
     public bool HasUserTyping { get; private set; }
     public bool IsMoving { get; private set; }
     public PetAnimationState MovingState { get; private set; } = PetAnimationState.RunningRight;
@@ -101,9 +104,24 @@ public class PetStateMachine
         EvaluateState();
     }
 
-    public void SetComputerWork(bool active)
+    public void SetComputerWork(bool active) => SetWorkSource(WorkSource.Simulation, active);
+
+    public void SetWorkSource(WorkSource source, bool active)
     {
-        HasComputerWork = active;
+        var updated = active ? ActiveWorkSources | source : ActiveWorkSources & ~source;
+        if (updated == ActiveWorkSources) return;
+        ActiveWorkSources = updated;
+        EvaluateState();
+    }
+
+    public void SetWorkPacingDirection(PetAnimationState? direction)
+    {
+        if (direction is not (null or PetAnimationState.RunningRight or PetAnimationState.RunningLeft))
+        {
+            throw new ArgumentOutOfRangeException(nameof(direction));
+        }
+        if (WorkPacingDirection == direction) return;
+        WorkPacingDirection = direction;
         EvaluateState();
     }
 
@@ -136,7 +154,9 @@ public class PetStateMachine
         HasNeedsAction = false;
         HasNotification = false;
         HasJobSuccess = false;
-        HasComputerWork = false;
+        // CPU load and watched-process activity are measurements, not simulations; their
+        // services report changes only, so wiping them here would leave the pet out of sync.
+        ActiveWorkSources &= WorkSource.CpuLoad | WorkSource.Process;
         HasUserTyping = false;
         IsMoving = false;
         CurrentGaze = null;
@@ -224,7 +244,8 @@ public class PetStateMachine
         else if (HasComputerWork)
         {
             highest = PetPriority.ComputerWork;
-            targetAnimation = PetAnimationState.Running; // Row 7: PC Work (thinking/cheering gestures)
+            // Row 7 in place, or Row 1/2 while PetMovementManager paces the pet back and forth
+            targetAnimation = WorkPacingDirection ?? PetAnimationState.Running;
         }
         else if (HasUserTyping)
         {

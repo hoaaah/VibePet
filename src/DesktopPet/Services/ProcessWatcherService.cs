@@ -17,7 +17,18 @@ public class ProcessWatcherService : IDisposable
         /// Proses pembantu (renderer/GPU Electron, worker MSBuild, dsb.) tidak memicu notifikasi sendiri.
         /// </summary>
         public bool IsHelper { get; set; }
+
+        public bool CountsAsWork { get; } = ProcessNameFormatter.CountsAsWork(processName);
+        public TimeSpan? LastCpuTime { get; set; }
+        public TimeSpan? LastBusyAt { get; set; }
     }
+
+    /// <summary>Fraksi satu core CPU yang dianggap "sedang bekerja".</summary>
+    public const double BusyCpuFraction = 0.05;
+    /// <summary>Lama status kerja dipertahankan setelah proses terakhir kali sibuk (anti-kedip).</summary>
+    public static readonly TimeSpan WorkLinger = TimeSpan.FromSeconds(4);
+
+    private TimeSpan? _lastScanAt;
 
     private readonly DispatcherTimer _timer;
     private readonly HashSet<string> _targetNames = new(StringComparer.OrdinalIgnoreCase);
@@ -43,6 +54,13 @@ public class ProcessWatcherService : IDisposable
     public event Action<IReadOnlyList<ProcessIdentity>, bool>? ProcessesStarted;
     public event Action<ProcessIdentity, int, int>? ProcessExited; // identity, pid, exitCode
     public event Action<IReadOnlyList<ProcessIdentity>>? ActiveProcessesChanged;
+
+    /// <summary>
+    /// True selama ada tool CLI/build/agent yang dipantau (termasuk proses pembantunya) sedang memakai CPU.
+    /// Aplikasi GUI tidak dihitung. Proses yang hidup tetapi diam tidak dianggap bekerja.
+    /// </summary>
+    public bool IsWorkActive { get; private set; }
+    public event Action<bool>? WorkActivityChanged;
 
     public ProcessWatcherService(IEnumerable<string>? initialProcesses = null)
     {
@@ -86,12 +104,62 @@ public class ProcessWatcherService : IDisposable
         _timer.Stop();
         bool hadProcesses = _activeProcesses.Count > 0;
         CleanupProcesses();
+        _lastScanAt = null;
         if (hadProcesses) ActiveProcessesChanged?.Invoke(ActiveProcesses);
+        SetWorkActive(false);
+    }
+
+    public static bool IsCpuBusy(TimeSpan cpuDelta, TimeSpan wallDelta) =>
+        wallDelta > TimeSpan.Zero && cpuDelta.TotalMilliseconds / wallDelta.TotalMilliseconds >= BusyCpuFraction;
+
+    public static bool IsWithinLinger(TimeSpan? lastBusyAt, TimeSpan now) =>
+        lastBusyAt is TimeSpan busy && now - busy <= WorkLinger;
+
+    private void SetWorkActive(bool active)
+    {
+        if (IsWorkActive == active) return;
+        IsWorkActive = active;
+        WorkActivityChanged?.Invoke(active);
+    }
+
+    private void UpdateWorkActivity()
+    {
+        var now = TimeSpan.FromMilliseconds(Environment.TickCount64);
+        var wallDelta = _lastScanAt is TimeSpan last ? now - last : TimeSpan.Zero;
+        _lastScanAt = now;
+
+        bool anyWorking = false;
+        foreach (var item in _activeProcesses.Values)
+        {
+            if (!item.CountsAsWork) continue;
+
+            try
+            {
+                var cpu = item.Process.TotalProcessorTime;
+                if (item.LastCpuTime is TimeSpan previous && IsCpuBusy(cpu - previous, wallDelta))
+                {
+                    item.LastBusyAt = now;
+                }
+                item.LastCpuTime = cpu;
+            }
+            catch
+            {
+                // Access denied (elevated process) or already exited: treat as idle
+            }
+
+            anyWorking |= IsWithinLinger(item.LastBusyAt, now);
+        }
+
+        SetWorkActive(anyWorking);
     }
 
     private void OnScanTick(object? sender, EventArgs e)
     {
-        if (!IsEnabled || _targetNames.Count == 0) return;
+        if (!IsEnabled || _targetNames.Count == 0)
+        {
+            SetWorkActive(false);
+            return;
+        }
 
         bool changed = false;
 
@@ -207,6 +275,8 @@ public class ProcessWatcherService : IDisposable
         {
             ActiveProcessesChanged?.Invoke(ActiveProcesses);
         }
+
+        UpdateWorkActivity();
     }
 
     private bool RefreshIdentities()

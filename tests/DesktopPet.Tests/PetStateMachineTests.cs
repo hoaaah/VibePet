@@ -149,6 +149,82 @@ public class PetStateMachineTests
     }
 
     [Fact]
+    public void CpuReturningToNormal_DoesNotEndWorkFromOtherSources()
+    {
+        RunInSta(() =>
+        {
+            var manager = SpriteSheetManager.Instance;
+            manager.Load();
+            var machine = new PetStateMachine(new SpritePlayer(manager));
+
+            machine.SetWorkSource(WorkSource.Process, true);
+            machine.SetWorkSource(WorkSource.CpuLoad, true);
+            Assert.Equal(PetPriority.ComputerWork, machine.CurrentPriority);
+
+            // CPU load drops, but the watched build is still busy (AGENTS.md rule 5)
+            machine.SetWorkSource(WorkSource.CpuLoad, false);
+            Assert.Equal(PetPriority.ComputerWork, machine.CurrentPriority);
+            Assert.Equal(WorkSource.Process, machine.ActiveWorkSources);
+
+            machine.SetWorkSource(WorkSource.Process, false);
+            Assert.False(machine.HasComputerWork);
+            Assert.Equal(PetPriority.Idle, machine.CurrentPriority);
+        });
+    }
+
+    [Fact]
+    public void ClearAllSimulations_KeepsMeasuredWorkSources()
+    {
+        RunInSta(() =>
+        {
+            var manager = SpriteSheetManager.Instance;
+            manager.Load();
+            var machine = new PetStateMachine(new SpritePlayer(manager));
+
+            machine.SetComputerWork(true);
+            machine.SetWorkSource(WorkSource.Ipc, true);
+            machine.SetWorkSource(WorkSource.Process, true);
+
+            machine.ClearAllSimulations();
+
+            Assert.Equal(WorkSource.Process, machine.ActiveWorkSources);
+            Assert.Equal(PetPriority.ComputerWork, machine.CurrentPriority);
+        });
+    }
+
+    [Fact]
+    public void WorkPacingDirection_SelectsRunningRowsDuringComputerWork()
+    {
+        RunInSta(() =>
+        {
+            var manager = SpriteSheetManager.Instance;
+            manager.Load();
+            var machine = new PetStateMachine(new SpritePlayer(manager));
+
+            machine.SetComputerWork(true);
+            Assert.Equal(PetAnimationState.Running, machine.CurrentVisualState);
+
+            machine.SetWorkPacingDirection(PetAnimationState.RunningLeft);
+            Assert.Equal(PetPriority.ComputerWork, machine.CurrentPriority);
+            Assert.Equal(PetAnimationState.RunningLeft, machine.CurrentVisualState);
+
+            machine.SetWorkPacingDirection(PetAnimationState.RunningRight);
+            Assert.Equal(PetAnimationState.RunningRight, machine.CurrentVisualState);
+
+            // Higher priority still wins over pacing
+            machine.SetError(true);
+            Assert.Equal(PetAnimationState.Failed, machine.CurrentVisualState);
+            machine.SetError(false);
+            Assert.Equal(PetAnimationState.RunningRight, machine.CurrentVisualState);
+
+            machine.SetWorkPacingDirection(null);
+            Assert.Equal(PetAnimationState.Running, machine.CurrentVisualState);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => machine.SetWorkPacingDirection(PetAnimationState.Idle));
+        });
+    }
+
+    [Fact]
     public void DirectInteractionHasHighestPriority()
     {
         RunInSta(() =>

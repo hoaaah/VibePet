@@ -30,6 +30,7 @@ public partial class MainWindow : Window
     private PetMovementManager? _movementManager;
     private ControlWindow? _controlWindow;
     private TrayIconManager? _trayManager;
+    private MenuItem? _itemWorkPacing;
 
     private double _currentScale = 1.0;
     private bool _isDragging = false;
@@ -88,7 +89,8 @@ public partial class MainWindow : Window
         _movementManager = new PetMovementManager(this, _stateMachine)
         {
             IsEnabled = _settingsService.Settings.AutoWander,
-            ReducedMotion = _settingsService.Settings.ReducedMotion
+            ReducedMotion = _settingsService.Settings.ReducedMotion,
+            WorkStyle = _settingsService.Settings.WorkAnimationStyle
         };
 
         // Wire Activity Detector (Typing & Cursor tracking)
@@ -118,6 +120,7 @@ public partial class MainWindow : Window
         _processWatcher.IsEnabled = _settingsService.Settings.EnableProcessWatcher;
         _processWatcher.ProcessesStarted += OnWatchedProcessesStarted;
         _processWatcher.ProcessExited += OnWatchedProcessExited;
+        _processWatcher.WorkActivityChanged += active => _stateMachine.SetWorkSource(WorkSource.Process, active);
         _processWatcher.Start();
 
         // Initialize ControlWindow and TrayManager
@@ -191,6 +194,7 @@ public partial class MainWindow : Window
                 SweatCanvas.Visibility = Visibility.Collapsed;
                 CpuBadge.Visibility = Visibility.Collapsed;
                 RamBadge.Visibility = Visibility.Collapsed;
+                _stateMachine.SetWorkSource(WorkSource.CpuLoad, false);
                 return;
             }
 
@@ -200,13 +204,14 @@ public partial class MainWindow : Window
                 SweatCanvas.Visibility = Visibility.Visible;
                 CpuBadge.Visibility = Visibility.Visible;
                 TxtCpuBadge.Text = $"🔥 CPU {metrics.CpuUsagePercentage:0}%";
-                _stateMachine.SetComputerWork(true);
+                _stateMachine.SetWorkSource(WorkSource.CpuLoad, true);
             }
             else
             {
                 SweatCanvas.Visibility = Visibility.Collapsed;
                 CpuBadge.Visibility = Visibility.Collapsed;
-                _stateMachine.SetComputerWork(false);
+                // Only clears the CPU source; IPC/process work keeps the pet busy (AGENTS.md rule 5)
+                _stateMachine.SetWorkSource(WorkSource.CpuLoad, false);
             }
 
             // RAM high load -> RAM badge
@@ -231,7 +236,7 @@ public partial class MainWindow : Window
             {
                 case "start":
                 case "work_started":
-                    _stateMachine.SetComputerWork(true);
+                    _stateMachine.SetWorkSource(WorkSource.Ipc, true);
                     ShowSpeechBubble(
                         msg.Title ?? "Pekerjaan Dimulai",
                         msg.Message ?? "Proses sedang berjalan...",
@@ -244,6 +249,7 @@ public partial class MainWindow : Window
 
                 case "success":
                 case "work_completed":
+                    _stateMachine.SetWorkSource(WorkSource.Ipc, false);
                     _stateMachine.TriggerJobSuccess();
                     ShowSpeechBubble(
                         msg.Title ?? "Pekerjaan Selesai",
@@ -257,6 +263,7 @@ public partial class MainWindow : Window
 
                 case "error":
                 case "work_failed":
+                    _stateMachine.SetWorkSource(WorkSource.Ipc, false);
                     _stateMachine.SetError(true);
                     ShowSpeechBubble(
                         msg.Title ?? "Terjadi Error",
@@ -305,9 +312,9 @@ public partial class MainWindow : Window
 
     private void OnWatchedProcessesStarted(IReadOnlyList<ProcessIdentity> identities, bool isInitialScan)
     {
+        // Bubble only: whether the computer is actually working comes from WorkActivityChanged (CPU use of watched tools)
         Dispatcher.InvokeAsync(() =>
         {
-            _stateMachine.SetComputerWork(true);
             ShowSpeechBubble(
                 isInitialScan ? "Proses Terdeteksi" : "Proses Dimulai",
                 ProcessNameFormatter.FormatStartedSummary(identities),
@@ -466,6 +473,18 @@ public partial class MainWindow : Window
             if (val) _movementManager.CancelMovement();
         }
         _settingsService.Save();
+    }
+
+    public void SetWorkAnimationStyle(WorkAnimationStyle style)
+    {
+        _settingsService.Settings.WorkAnimationStyle = style;
+        if (_movementManager != null)
+        {
+            _movementManager.WorkStyle = style;
+        }
+        _settingsService.Save();
+        _controlWindow?.SyncWorkAnimationStyle(style);
+        if (_itemWorkPacing != null) _itemWorkPacing.IsChecked = style == WorkAnimationStyle.Pacing;
     }
 
     public void SetAutoWander(bool val)
@@ -666,6 +685,16 @@ public partial class MainWindow : Window
         itemAutoWander.Click += (s, e) => SetAutoWander(itemAutoWander.IsChecked);
         MenuBehavior.Items.Add(itemAutoWander);
 
+        _itemWorkPacing = new MenuItem
+        {
+            Header = "Kerja: Berlari Bolak-balik",
+            IsCheckable = true,
+            IsChecked = settings.WorkAnimationStyle == WorkAnimationStyle.Pacing
+        };
+        _itemWorkPacing.Click += (s, e) => SetWorkAnimationStyle(
+            _itemWorkPacing.IsChecked ? WorkAnimationStyle.Pacing : WorkAnimationStyle.Static);
+        MenuBehavior.Items.Add(_itemWorkPacing);
+
         var itemGaze = new MenuItem
         {
             Header = "Gaze Tracking (Ikuti Mouse)",
@@ -744,11 +773,12 @@ public partial class MainWindow : Window
             switch (e.Mode)
             {
                 case PowerModes.Suspend:
-                    _player.Pause();
+                    // Stop movement first: ending pacing re-evaluates the state and would restart the player
+                    _movementManager?.Stop();
                     _resourceMonitor.Stop();
                     _processWatcher.Stop();
                     _activityDetector.Stop();
-                    _movementManager?.CancelMovement();
+                    _player.Pause();
                     break;
 
                 case PowerModes.Resume:
@@ -759,6 +789,7 @@ public partial class MainWindow : Window
                     if (_settingsService.Settings.AutoWander) _movementManager?.Start();
                     _stateMachine.EvaluateState();
                     ValidateAndReposition();
+                    _movementManager?.SyncPacing();
                     break;
             }
         });

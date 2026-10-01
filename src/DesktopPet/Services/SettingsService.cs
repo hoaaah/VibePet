@@ -1,6 +1,8 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
+using DesktopPet.Models;
 
 namespace DesktopPet.Services;
 
@@ -11,6 +13,8 @@ public class PetSettings
     public double Scale { get; set; } = 1.0;
     public bool ReducedMotion { get; set; } = false;
     public bool AutoWander { get; set; } = true;
+    [JsonConverter(typeof(JsonStringEnumConverter<WorkAnimationStyle>))]
+    public WorkAnimationStyle WorkAnimationStyle { get; set; } = WorkAnimationStyle.Pacing;
     public bool GazeTracking { get; set; } = true;
     public bool TypingDetection { get; set; } = true;
     public bool ResourceMonitoring { get; set; } = true;

@@ -55,6 +55,7 @@ public partial class ControlWindow : Window
         SliderScale.Value = settings.Scale;
         ChkReducedMotion.IsChecked = settings.ReducedMotion;
         ChkAutoWander.IsChecked = settings.AutoWander;
+        SyncWorkAnimationStyle(settings.WorkAnimationStyle);
         ChkGazeTracking.IsChecked = settings.GazeTracking;
         ChkTypingDetection.IsChecked = settings.TypingDetection;
         ChkResourceMonitoring.IsChecked = settings.ResourceMonitoring;
@@ -354,6 +355,17 @@ public partial class ControlWindow : Window
     {
         bool val = ChkAutoWander.IsChecked == true;
         _mainWindow.SetAutoWander(val);
+    }
+
+    private void RbWorkStyle_Click(object sender, RoutedEventArgs e)
+    {
+        _mainWindow.SetWorkAnimationStyle(RbWorkPacing.IsChecked == true ? WorkAnimationStyle.Pacing : WorkAnimationStyle.Static);
+    }
+
+    public void SyncWorkAnimationStyle(WorkAnimationStyle style)
+    {
+        RbWorkPacing.IsChecked = style == WorkAnimationStyle.Pacing;
+        RbWorkStatic.IsChecked = style == WorkAnimationStyle.Static;
     }
 
     private void ChkGazeTracking_Click(object sender, RoutedEventArgs e)

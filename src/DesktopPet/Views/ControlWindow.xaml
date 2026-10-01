@@ -286,8 +286,13 @@
             <!-- Behavioral Settings -->
             <GroupBox Header="Opsi Perilaku &amp; Aksesibilitas">
                 <StackPanel>
-                    <CheckBox x:Name="ChkReducedMotion" Content="Reduced Motion (Nonaktifkan perpindahan jalan)" Click="ChkReducedMotion_Click"/>
+                    <CheckBox x:Name="ChkReducedMotion" Content="Reduced Motion (Tanpa lari/perpindahan: wander, drag, kerja bolak-balik)" Click="ChkReducedMotion_Click"/>
                     <CheckBox x:Name="ChkAutoWander" Content="Auto Wander (Pet sesekali jalan-jalan otomatis)" Click="ChkAutoWander_Click"/>
+                    <TextBlock Text="Gaya animasi saat komputer bekerja:" Margin="0,6,0,2"/>
+                    <StackPanel Orientation="Horizontal" Margin="12,0,0,4">
+                        <RadioButton x:Name="RbWorkStatic" GroupName="WorkStyle" Content="Statis di tempat" Margin="0,0,16,0" Click="RbWorkStyle_Click"/>
+                        <RadioButton x:Name="RbWorkPacing" GroupName="WorkStyle" Content="Berlari bolak-balik" Click="RbWorkStyle_Click"/>
+                    </StackPanel>
                     <CheckBox x:Name="ChkGazeTracking" Content="Gaze Tracking (Arah pandang ikuti mouse saat netral)" Click="ChkGazeTracking_Click"/>
                     <CheckBox x:Name="ChkTypingDetection" Content="Deteksi Mengetik (Mengetik memicu Review)" Click="ChkTypingDetection_Click"/>
                     <CheckBox x:Name="ChkResourceMonitoring" Content="Resource Monitoring Aktif (CPU &amp; RAM Sampling)" Click="ChkResourceMonitoring_Click"/>
