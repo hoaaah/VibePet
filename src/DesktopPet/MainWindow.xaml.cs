@@ -106,13 +106,14 @@ public partial class MainWindow : Window
 
         // Wire Process Watcher
         _processWatcher.IsEnabled = _settingsService.Settings.EnableProcessWatcher;
-        _processWatcher.ProcessStarted += OnWatchedProcessStarted;
+        _processWatcher.ProcessesStarted += OnWatchedProcessesStarted;
         _processWatcher.ProcessExited += OnWatchedProcessExited;
         _processWatcher.Start();
 
         // Initialize ControlWindow and TrayManager
         _controlWindow = new ControlWindow(this, _player, _stateMachine, _movementManager, _activityDetector, _resourceMonitor, _ipcServer, _processWatcher, _autoStartService);
         _trayManager = new TrayIconManager(this, _controlWindow);
+        _processWatcher.ActiveProcessesChanged += processes => _trayManager?.UpdateActiveProcesses(processes);
 
         _movementManager.Start();
 
@@ -292,21 +293,21 @@ public partial class MainWindow : Window
         });
     }
 
-    private void OnWatchedProcessStarted(string processName, int pid)
+    private void OnWatchedProcessesStarted(IReadOnlyList<ProcessIdentity> identities, bool isInitialScan)
     {
         Dispatcher.InvokeAsync(() =>
         {
             _stateMachine.SetComputerWork(true);
             ShowSpeechBubble(
-                "Proses Dimulai",
-                $"Proses '{processName}' (PID: {pid}) terdeteksi sedang berjalan.",
+                isInitialScan ? "Proses Terdeteksi" : "Proses Dimulai",
+                ProcessNameFormatter.FormatStartedSummary(identities),
                 timeoutSeconds: 4,
                 type: "work"
             );
         });
     }
 
-    private void OnWatchedProcessExited(string processName, int pid, int exitCode)
+    private void OnWatchedProcessExited(ProcessIdentity identity, int pid, int exitCode)
     {
         Dispatcher.InvokeAsync(() =>
         {
@@ -315,7 +316,7 @@ public partial class MainWindow : Window
                 _stateMachine.TriggerJobSuccess();
                 ShowSpeechBubble(
                     "Proses Selesai",
-                    $"Proses '{processName}' selesai dengan sukses (exit code: 0)!",
+                    $"{identity.DisplayName} selesai dengan sukses (exit code: 0)!",
                     timeoutSeconds: 5,
                     type: "success"
                 );
@@ -325,7 +326,7 @@ public partial class MainWindow : Window
                 _stateMachine.SetError(true);
                 ShowSpeechBubble(
                     "Proses Gagal",
-                    $"Proses '{processName}' keluar dengan error (exit code: {exitCode}).",
+                    $"{identity.DisplayName} keluar dengan error (exit code: {exitCode}).",
                     actionLabel: "Tutup",
                     timeoutSeconds: 8,
                     type: "error"

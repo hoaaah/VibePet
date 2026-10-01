@@ -31,8 +31,8 @@ Aplikasi berjalan tanpa ketergantungan pada Codex. Format sprite diadaptasi dari
   - *44 Unit Tests* di `tests/DesktopPet.Tests` lulus 100%.
 - Aset berasal dari pet terpilih `Kawahime`.
 - Seluruh 5 tahapan pengembangan awal telah rampung 100%.
-- **Tahap 6 (Pengembangan Lanjutan — Siap Dieksekusi):**
-  1. *Nama Proses Ramah Pengguna:* Ganti PID teknis pada balon notifikasi dan tooltip tray dengan nama aplikasi bersih (misal `.NET CLI`, `Node.js`, `VS Code`, `PowerShell`, `FFmpeg`).
+- **Tahap 6 (Pengembangan Lanjutan):**
+  1. *Nama Proses & Dokumen Aktif (Selesai, unit test + uji proses nyata):* PID diganti identitas `ProcessIdentity` = nama aplikasi + project/dokumen yang dibuka (misal `Visual Studio Code — pet-ag (AGENTS.md)`, `Microsoft Word — Laporan.docx`, `Node.js — server.js`, `.NET CLI — build`) pada balon notifikasi dan tooltip tray. Proses pembantu (anak dari proses bernama sama atau ber-argumen `--type=`) tidak memicu balon maupun animasi gagal; proses yang terdeteksi dalam satu scan (termasuk saat pet dibuka) digabung menjadi satu balon ringkasan; tooltip tray menampilkan satu aplikasi per baris dalam batas 63 karakter. Daftar default watcher diperluas dengan `gitkraken`, `claude`, `codex`, `agy`, `winword`, `msedge`. 93 unit tests lulus 100%. Verifikasi visual balon dan tooltip di aplikasi berjalan belum dilakukan.
   2. *Interactive Drag Movement:* Animasi berlari ke kiri (`RunningLeft`) atau kanan (`RunningRight`) dinamis mengikuti arah seretan kursor pengguna, disusul lompatan gembira (`Jumping`) setelah dilepas.
   3. *Animasi Kerja Dinamis:* Mengubah running komputer bekerja menjadi berlari aktif bolak-balik (kiri & kanan) atau mondar-mandir santai.
   4. *Multi-Skin / Sprite Packs System:* Penyimpanan dan pemilihan paket sprite kustom dari `%AppData%\DesktopPet\Skins\` dengan *hot-swap* langsung dari Panel Kontrol & Context Menu tanpa restart.
@@ -181,10 +181,16 @@ Efek keringat, indikator resource, dan balon teks belum tersedia di sprite sumbe
 
 ### 6. Interaktivitas lanjutan & paket sprite kustom (Roadmap Berikutnya)
 
-1. **Nama Proses Ramah Pengguna (*Friendly Process Names*):**
-   - Menggantikan string PID teknis Windows (`PID: 12345`) pada balon dialog notifikasi dan tooltip tray dengan nama aplikasi bersih.
-   - Menyediakan kamus pemetaan nama umum (misal `dotnet` &rarr; `.NET CLI / Build Tool`, `node` &rarr; `Node.js Runtime`, `pwsh` &rarr; `PowerShell Terminal`, `code` &rarr; `Visual Studio Code`, `cargo` &rarr; `Rust Cargo`, `ffmpeg` &rarr; `FFmpeg Video Processor`).
-   - Proses di luar kamus diformat dengan pembersihan ekstensi `.exe` dan kapitalisasi yang rapi.
+1. **Nama Proses & Dokumen Aktif (*Friendly Process Identity* — Selesai):**
+   - `ProcessNameFormatter` (logika murni, teruji): kamus nama aplikasi (`dotnet` &rarr; `.NET CLI`, `node` &rarr; `Node.js`, `code` &rarr; `Visual Studio Code`, `winword` &rarr; `Microsoft Word`, `excel`, `powerpnt`, `devenv`, `notepad`, dsb.) dan fallback `my_tool-name.exe` &rarr; `My Tool Name`.
+   - Sumber konteks dengan prioritas: (1) judul jendela proses itu sendiri, (2) argumen command line (nama file/project/skrip atau subcommand CLI), (3) judul jendela proses bernama sama (untuk helper Electron VS Code yang tidak punya jendela).
+   - Parser judul membuang akhiran nama aplikasi, penanda belum disimpan (`●`, `*`), dan status seperti `Compatibility Mode`; pola VS Code `<file> - <folder> - Visual Studio Code` dipecah menjadi project + file aktif.
+   - `ProcessIdentityResolver` (Win32): satu kali `EnumWindows` per tick watcher untuk peta PID &rarr; judul, dan command line via `NtQueryInformationProcess` dengan hak `PROCESS_QUERY_LIMITED_INFORMATION`. Command line utuh tidak disimpan; hanya nama file/subcommand yang diambil.
+   - Identitas diperbarui tiap tick (1,5 s) sehingga notifikasi selesai/gagal memakai project/dokumen terakhir yang diketahui. Tooltip tray dikelompokkan per identitas dan dipotong ke 63 karakter.
+   - Proses pembantu ditandai saat ditemukan: parent PID (via `NtQueryInformationProcess` `ProcessBasicInformation`) adalah proses ter-pantau dengan nama sama, atau command line memuat `--type=` (Chromium/Electron). Start/exit proses pembantu diabaikan, sehingga renderer VS Code/Edge yang keluar dengan kode non-nol tidak memicu animasi gagal.
+   - Event `ProcessesStarted` dikirim per scan dengan identitas unik; scan pertama setelah `Start()` ditandai `isInitialScan` dan ditampilkan sebagai satu balon "Proses Terdeteksi".
+   - Daftar default watcher: `dotnet`, `node`, `pwsh`, `cargo`, `ffmpeg`, `code`, `gitkraken`, `claude`, `codex`, `agy` (CLI Antigravity), `winword`, `msedge`. `git` sengaja tidak dimasukkan karena VS Code/GitKraken menjalankannya terus-menerus. `settings.json` yang sudah ada tidak dimigrasi otomatis.
+   - Catatan: `excel`/`powerpnt` perlu ditambahkan manual bila dibutuhkan.
 
 2. **Animasi Berlari Interaktif Saat Drag (*Interactive Drag Running*):**
    - Mengganti penahanan satu frame statis saat drag menjadi animasi dinamis mengikuti arah seretan kursor pengguna.

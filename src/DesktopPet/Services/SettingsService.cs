@@ -22,7 +22,15 @@ public class PetSettings
     public bool EnableIpc { get; set; } = true;
     public bool EnableProcessWatcher { get; set; } = true;
     public bool StartWithWindows { get; set; } = false;
-    public List<string> WatchedProcesses { get; set; } = ["dotnet", "node", "pwsh", "cargo", "ffmpeg", "code"];
+    public List<string> WatchedProcesses { get; set; } =
+    [
+        // Developer tools & builds
+        "dotnet", "node", "pwsh", "cargo", "ffmpeg",
+        // Editors, Git client & AI coding CLIs
+        "code", "gitkraken", "claude", "codex", "agy",
+        // Documents & browser
+        "winword", "msedge",
+    ];
 }
 
 public class SettingsService

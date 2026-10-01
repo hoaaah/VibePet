@@ -13,6 +13,8 @@ public class TrayIconManager : IDisposable
     private readonly ControlWindow _controlWindow;
     private NotifyIcon? _notifyIcon;
 
+    private const string BaseTrayText = "Desktop Pet (Kawahime)";
+
     public TrayIconManager(MainWindow mainWindow, ControlWindow controlWindow)
     {
         _mainWindow = mainWindow;
@@ -24,7 +26,7 @@ public class TrayIconManager : IDisposable
     {
         _notifyIcon = new NotifyIcon
         {
-            Text = "Desktop Pet (Kawahime)",
+            Text = BaseTrayText,
             Visible = true
         };
 
@@ -89,6 +91,15 @@ public class TrayIconManager : IDisposable
                 _mainWindow.Activate();
             }
         };
+    }
+
+    public void UpdateActiveProcesses(IReadOnlyList<ProcessIdentity> activeProcesses)
+    {
+        if (_notifyIcon == null) return;
+        // Header lebih pendek saat ada proses aktif supaya lebih banyak aplikasi muat dalam 63 karakter.
+        _notifyIcon.Text = activeProcesses.Count == 0
+            ? BaseTrayText
+            : ProcessNameFormatter.FormatTrayText("Desktop Pet", activeProcesses);
     }
 
     public void Dispose()
