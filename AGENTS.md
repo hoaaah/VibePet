@@ -1,6 +1,8 @@
-# Windows Desktop Pet — Panduan AI Agent
+# VibePet — Panduan AI Agent
 
 ## Tujuan project
+
+**VibePet** adalah nama project ini (sebelumnya "Desktop Pet"). Rename baru diterapkan di dokumentasi. Nama teknis sengaja tetap `DesktopPet`, termasuk namespace/proyek `src/DesktopPet`, `DesktopPet.exe`, paket `dist/DesktopPet-v…zip`, folder data `%AppData%\DesktopPet`, pipe `\\.\pipe\DesktopPetIpc`, key auto-start, dan teks UI aplikasi. Mengubah nama-nama tersebut akan memutus settings/skins pengguna lama dan skrip IPC, jadi jangan ganti tanpa keputusan eksplisit dari user beserta rencana migrasinya.
 
 Membangun aplikasi desktop Windows mandiri yang menampilkan pet animasi di atas aplikasi lain. Pet menggambarkan aktivitas user, pekerjaan komputer, beban resource, error, dan notifikasi yang membutuhkan respons. User dapat memindahkan dan berinteraksi dengan pet.
 
